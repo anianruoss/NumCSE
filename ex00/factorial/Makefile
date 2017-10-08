@@ -1,7 +1,7 @@
 PROJNAME := factorial
 
 CPP := g++
-CFLAGS := -Wall -std=gnu++14 -I/usr/include/eigen3
+CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
 LFLAGS := -lstdc++ -lmgl
 
 ifeq (1,${DEBUG})
