@@ -68,7 +68,7 @@ class Point {
         datx.Link(xcoords, len);
         daty.Link(ycoords, len);
         mglGraph gr;
-        gr.SetRanges(0,1,0,1);
+        gr.SetRanges(-0.5,1.5,-1,1);
         gr.Plot(datx, daty, "0");
         mglPoint pleftdown(0,0), prightup(1,1);
         gr.SetCutBox(pleftdown, prightup);
@@ -106,7 +106,9 @@ class Point {
 
 
 int main() {
-    Point *p2 = new Point(1,0);
+    Point *p4 = new Point(0,0);
+    Point *p3 = new Point(1/2.0,-std::sqrt(3)/2.0,p4);
+    Point *p2 = new Point(1,0,p3);
     Point *p1 = new Point(0,0,p2);
 
     int nStages = 5;
@@ -123,11 +125,11 @@ int main() {
     mglData data;
     data.Link(lengths, nStages);
     mglGraph gr;
-    gr.SetRanges(0,nStages,0,nStages);
+    gr.SetRanges(0,nStages,0,3*nStages);
     gr.Plot(data);
     gr.Axis();
     gr.Label('x',"Stage");
     gr.Label('y',"Length");
-    gr.WriteFrame("bin/lengthsPlot.png");
+    gr.WriteFrame("bin/lengthsPlot.eps");
 }
 
