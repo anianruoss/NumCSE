@@ -1,7 +1,6 @@
 #include "timer.h"
 #include <iostream>
 #include <iomanip>
-#include <cmath>
 #include <Eigen/Dense>
 #include <mgl2/mgl.h>
 
