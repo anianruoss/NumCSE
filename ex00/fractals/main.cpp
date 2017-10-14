@@ -11,10 +11,9 @@ class Point {
     Point *next;
 
   public:
-    Point(double x, double y) : x(x), y(y), next(nullptr) {}
-    Point(double x, double y, Point *next) : x(x), y(y), next(next) {}
+    Point(double x, double y, Point *next=nullptr) : x(x), y(y), next(next) {}
 
-    double dist(Point &a, Point &b) {
+    static double dist(Point &a, Point &b) {
         double dx = a.x - b.x;
         double dy = a.y - b.y;
 
@@ -23,8 +22,8 @@ class Point {
 
     int countPoints() {
         int counter = 0;
-
         Point *iter = this;
+
         while (iter != nullptr) {
             counter++;
             iter = iter->next;
@@ -35,8 +34,8 @@ class Point {
 
     double length() {
         Point *iter = this;
-
         double len = 0;
+
         while (iter->next != nullptr) {
             len += this->dist(*iter, *iter->next);
             iter=iter->next;
@@ -88,7 +87,7 @@ class Point {
         double yperp = xtwothird - xonethird;
 
         Point *p3 = new Point(xtwothird, ytwothird, p);
-        Point *p2 = new Point(xmid + xperp*sqrt(3)/2, ymid + yperp*sqrt(3)/2, p3);
+        Point *p2 = new Point(xmid + xperp*sqrt(3.0)/2.0, ymid + yperp*sqrt(3.0)/2.0, p3);
         Point *p1 = new Point(xonethird, yonethird, p2);
         this->next = p1;
     }
@@ -110,7 +109,7 @@ int main() {
     Point *p3 = new Point(1/2.0,-std::sqrt(3)/2.0,p4);
     Point *p2 = new Point(1,0,p3);
     Point *p1 = new Point(0,0,p2);
-
+	
     int nStages = 5;
     double *lengths = new double[nStages];
 
