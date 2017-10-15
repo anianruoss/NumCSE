@@ -114,7 +114,7 @@ void runtime_arrow_matrix() {
     for (unsigned int i = 0; i < nLevels; ++i) {
         nMgl[i] = n[i];
         ref1[i] = 1e-8*pow(n[i],3);
-        ref2[i] = 1e-7*n[i];
+        ref2[i] = 1e-8*n[i];
     }
 
     mglData matSize;
