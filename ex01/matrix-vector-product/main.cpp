@@ -21,27 +21,6 @@ void multAminSlow(const VectorXd &x, VectorXd &y) {
 }
 
 /* \brief compute $\mathbf{A}\mathbf{x}$
- * \mathbf{A} is defined by $(\mathbf{A})_{i,j} := \min {i,j}$
- * Instead of a "Matlab style" construcion of the product,
- * we use simple loops.
- * \param[in] x vector x for computation of A*x = y
- * \param[out] y = A*x
- */
-void multAminLoops(const VectorXd &x, VectorXd &y) {
-    unsigned int n = x.size();
-
-    MatrixXd A(n,n);
-
-    for (unsigned int i = 0; i < n; ++i) {
-        for (unsigned int j = 0; j < n; ++j) {
-            A(i,j) = std::min(i+1,j+1);
-        }
-    }
-
-    y = A * x;
-}
-
-/* \brief compute $\mathbf{A}\mathbf{x}$
  * This function has optimal complexity.
  * \mathbf{A} is defined by $(\mathbf{A})_{i,j} := \min {i,j}$
  * \param[in] x vector x for computation of A*x = y
@@ -151,13 +130,40 @@ int main(void) {
     multAmin(xa, yf);
     multAminSlow(xa, ys);
 
-    // Error should be small
     std::cout << "--> Correctness test." << std::endl;
     std::cout << "||ys-yf|| = " << (ys - yf).norm() << std::endl;
 
-    std::cout << "--> Runtime test." << std::endl;
+    std::cout << std::endl << "--> Runtime test." << std::endl;
     runtime_multAmin();
 
+    MatrixXd B = MatrixXd::Zero(M,M);
+    for (unsigned int i = 0; i < M; ++i) {
+        B(i,i) = 2;
+        if (i < M-1) B(i+1,i) = -1;
+        if (i > 0) B(i-1,i) = -1;
+    }
+    B(M-1,M-1) = 1;
 
+    // restore default stream
+    std::cout.copyfmt(std::ios(NULL));
+    std::cout << std::endl << "B = " << std::endl << B << std::endl;
+
+    std::cout << std::endl << "--> Test B = inv(A)" << std::endl;
+    VectorXd x = VectorXd::Random(M), y;
+
+    std::cout << std::scientific << std::setprecision(3);
+    multAminSlow(B*x,y);
+    std::cout << std::setw(10) << "Original: "
+              << std::setw(10) << "|y-x| = "
+              << std::setw(10) << (y-x).norm()
+              << std::endl;
+
+    multAmin(B*x,y);
+    std::cout << std::setw(10) << "Efficient:"
+              << std::setw(10) << "|y-x| = "
+              << std::setw(10) << (y-x).norm()
+              << std::endl;
+
+    return 0;
 }
 
