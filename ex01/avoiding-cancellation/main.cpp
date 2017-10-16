@@ -38,7 +38,7 @@ int main() {
         h /= 10;
     }
 
-    /*
+
     mglData stepSize, dataRef;
     stepSize.Link(hValues, 21);
     dataRef.Link(hValues, 21);
@@ -49,22 +49,25 @@ int main() {
 
     mglGraph *gr = new mglGraph;
     gr->Title("Error of approximation of f'(x_0)");
-    gr->SetRanges(0,1,0,1.5);
+    gr->SetRanges(hValues[20],hValues[0],1e-20,1.5);
     gr->Label('x', "h",0);
     gr->Label('y', "Relative Error",0);
-    gr->SetFunc("lg(x)", "lg(y)");
+    gr->SetFunc("lg(x)","lg(y)");
 
+    double xTicks[] = {1e-20,1e-15,1e-10,1e-5,1e+0};
+    double yTicks[] = {1e-20,1e-15,1e-10,1e-5,1e+0};
+    gr->SetTicksVal('x', mglData(5,xTicks), "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
+    gr->SetTicksVal('y', mglData(5,yTicks), "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
     gr->Axis();
 
     gr->Plot(stepSize,data1,"k+");
     gr->AddLegend("cancellation", "k+");
-    gr->Plot(stepSize,data2,"r+");
-    gr->AddLegend("no cancellation", "r+");
+    gr->Plot(stepSize,data2,"r +");
+    gr->AddLegend("no cancellation", "r +");
     gr->Plot(stepSize,dataRef,"b|");
     gr->AddLegend("O(h)","b|");
     gr->Legend(1);
     gr->WriteFrame("bin/avoid-cancellation.eps");
-    */
 
     return 0;
 }
