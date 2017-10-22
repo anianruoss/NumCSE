@@ -5,7 +5,7 @@
 
 using namespace Eigen;
 
-
+// Complexity: O(n^2)
 VectorXd solve_backSub(const MatrixXd &R, const VectorXd &c) {
     int n = R.rows();
     VectorXd y(n);
@@ -23,6 +23,7 @@ VectorXd solve_backSub(const MatrixXd &R, const VectorXd &c) {
     return y;
 }
 
+// Complexity: O(n^2)
 void solve_blockLU(const MatrixXd &R, const VectorXd &u, const VectorXd &v,
                    const VectorXd &b, VectorXd &x) {
     unsigned int n = R.rows();
@@ -39,6 +40,7 @@ void solve_blockLU(const MatrixXd &R, const VectorXd &u, const VectorXd &v,
     x = solve_backSub(U,y);
 }
 
+// Complexity: O(n^2)
 void solve_blockGauss(const MatrixXd &R, const VectorXd &u, const VectorXd &v,
                       const VectorXd &b, VectorXd &x) {
     unsigned int n = R.rows();
@@ -67,8 +69,7 @@ int main() {
     A << R , v, u.transpose(), 0;
     Timer t;
 
-	std::cout << std::endl;
-    std::cout << "--> EigenLU:" << std::endl;
+    std::cout << "--> EigenLU" << std::endl;
     t.start();
     x1 = A.fullPivLu().solve(b);
     t.stop();
@@ -76,7 +77,7 @@ int main() {
     std::cout << "Time:  " << t.duration() << std::endl << std::endl;
     t.reset();
 
-    std::cout << "--> BlockwiseLU:" << std::endl;
+    std::cout << "--> BlockwiseLU" << std::endl;
     t.start();
     solve_blockLU(R,u,v,b,x2);
     t.stop();
@@ -84,12 +85,12 @@ int main() {
     std::cout << "Time:  " << t.duration() << std::endl << std::endl;
     t.reset();
 
-    std::cout << "--> Gaussian Elimination:" << std::endl;
+    std::cout << "--> Gaussian Elimination" << std::endl;
     t.start();
     solve_blockGauss(R, u, v, b, x3);
     t.stop();
     std::cout << "Error: " << (A*x3 - b).norm() << std::endl;
-    std::cout << "Time:  " << t.duration() << std::endl << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl;
 
     return 0;
 }
