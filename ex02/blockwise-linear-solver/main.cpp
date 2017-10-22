@@ -1,3 +1,4 @@
+#include "timer.h"
 #include <iostream>
 #include <Eigen/Dense>
 
@@ -38,9 +39,15 @@ void solve_blockLU(const MatrixXd &R, const VectorXd &u, const VectorXd &v,
     x = solve_backSub(U,y);
 }
 
-// Point (f)
 void solve_blockGauss(const MatrixXd &R, const VectorXd &u, const VectorXd &v,
                       const VectorXd &b, VectorXd &x) {
+    unsigned int n = R.rows();
+
+    double s = -u.transpose()*solve_backSub(R,v);
+    double bs = b(n) - u.transpose()*solve_backSub(R,b.head(n));
+
+    x.head(n) = solve_backSub(R, (b.head(n) - v*bs/s));
+    x(n) = bs/s;
 }
 
 
@@ -58,14 +65,31 @@ int main() {
 
     MatrixXd A(n+1,n+1);
     A << R , v, u.transpose(), 0;
+    Timer t;
 
+	std::cout << std::endl;
+    std::cout << "--> EigenLU:" << std::endl;
+    t.start();
     x1 = A.fullPivLu().solve(b);
-    std::cout << (A*x1 - b).norm() << std::endl;
+    t.stop();
+    std::cout << "Error: " << (A*x1 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl << std::endl;
+    t.reset();
 
+    std::cout << "--> BlockwiseLU:" << std::endl;
+    t.start();
     solve_blockLU(R,u,v,b,x2);
-    std::cout << (A*x2 - b).norm() << std::endl;
+    t.stop();
+    std::cout << "Error: " << (A*x2 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl << std::endl;
+    t.reset();
 
+    std::cout << "--> Gaussian Elimination:" << std::endl;
+    t.start();
     solve_blockGauss(R, u, v, b, x3);
+    t.stop();
+    std::cout << "Error: " << (A*x3 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl << std::endl;
 
     return 0;
 }
