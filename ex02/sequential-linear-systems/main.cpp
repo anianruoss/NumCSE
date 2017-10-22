@@ -5,14 +5,14 @@
 
 using namespace Eigen;
 
-
+// Complexity: O(mn^3)
 void solve_naive(const MatrixXd &A, const MatrixXd &b, MatrixXd &X) {
     for (int i = 0; i < b.cols(); ++i) {
         X.col(i) = A.fullPivLu().solve(b.col(i));
     }
 }
 
-
+// Complexity: O(n^3 + mn^2)
 void solve_LU(const MatrixXd &A, const MatrixXd &b, MatrixXd &X) {
     FullPivLU<MatrixXd> lu(A);
 
