@@ -1,27 +1,28 @@
+#include "timer.h"
 #include <iostream>
 #include <Eigen/Dense>
+
 
 using namespace Eigen;
 
 
 void solve_naive(const MatrixXd &A, const MatrixXd &b, MatrixXd &X) {
-    X = A.fullPivLu().solve(b);
+    for (int i = 0; i < b.cols(); ++i) {
+        X.col(i) = A.fullPivLu().solve(b.col(i));
+    }
 }
 
 
 void solve_LU(const MatrixXd &A, const MatrixXd &b, MatrixXd &X) {
-    Eigen::FullPivLU<MatrixXd> lu(A);
+    FullPivLU<MatrixXd> lu(A);
 
-    // solve Lz = Pb
-    MatrixXd Pb = lu.permutationP() * b;
-    MatrixXd L = MatrixXd::Identity(A.cols(),A.cols());
-    L.triangularView<StrictlyLower>() = lu.matrixLU();
-    MatrixXd z = L.inverse() * Pb;
+    for (int i = 0; i < b.cols(); ++i) {
+        X.col(i) = lu.solve(b.col(i));
+    }
+}
 
-    // solve UQ^-1x = z
-    MatrixXd U = lu.matrixLU().triangularView<Upper>();
-    MatrixXd R = U * lu.permutationQ().inverse();
-    X = R.inverse() * z;
+void solve_eigenLU(const MatrixXd &A, const MatrixXd &b, MatrixXd &X) {
+    X = A.fullPivLu().solve(b);
 }
 
 
@@ -35,20 +36,32 @@ int main() {
     MatrixXd b = MatrixXd::Random(n,m);
     MatrixXd X1(n,m);
     MatrixXd X2(n,m);
+    MatrixXd X3(n,m);
+
+    Timer t;
 
     std::cout << "--> Naive:" << std::endl;
+    t.start();
     solve_naive(A,b,X1);
-    std::cout << "A*x = " << std::endl << A*X1 << std::endl;
-    std::cout << std::endl << "b = " << std::endl << b << std::endl;
-    std::cout << std::endl << "Error: " <<
-              std::endl << (A*X1 - b).norm() << std::endl;
+    t.stop();
+    std::cout << "Error: " << (A*X1 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl;
 
     std::cout << std::endl << "--> LU-decomposition:" << std::endl;
+    t.reset();
+    t.start();
     solve_LU(A,b,X2);
-    std::cout << "A*x = " << std::endl << A*X2 << std::endl;
-    std::cout << std::endl << "b = "	<< std::endl << b << std::endl;
-    std::cout << std::endl << "Error: " <<
-              std::endl << (A*X2 - b).norm() << std::endl;
+    t.stop();
+    std::cout << "Error: " << (A*X2 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl;
+
+    std::cout << std::endl << "--> Eigen-LU: " << std::endl;
+    t.reset();
+    t.start();
+    solve_eigenLU(A,b,X3);
+    t.stop();
+    std::cout << "Error: " << (A*X3 - b).norm() << std::endl;
+    std::cout << "Time:  " << t.duration() << std::endl;
 
     return 0;
 }
