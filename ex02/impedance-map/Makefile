@@ -1,4 +1,4 @@
-PROJNAME := matrix-vector-product
+PROJNAME := impedance-map 
 
 CPP := g++
 CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3

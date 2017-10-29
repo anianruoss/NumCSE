@@ -1,4 +1,4 @@
-PROJNAME := matrix-vector-product
+PROJNAME := sequential-linear-systems 
 
 CPP := g++
 CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
@@ -8,7 +8,7 @@ ifeq (1,${DEBUG})
 	CFLAGS += -O0 -g
 	OUTDIR := bin/out/debug
 else
-	CFLAGS += -O3 -march=native 
+	CFLAGS += -O3 -march=native
 	OUTDIR := bin/out/release
 endif
 

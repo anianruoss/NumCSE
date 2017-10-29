@@ -1,14 +1,14 @@
 PROJNAME := gram-schmidt 
 
 CPP := g++
-CFLAGS := -O3 -march=native -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
+CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
 LFLAGS := -lstdc++ -lmgl
 
 ifeq (1,${DEBUG})
 	CFLAGS += -O0 -g
 	OUTDIR := bin/out/debug
 else
-	CFLAGS += -O2
+	CFLAGS += -O3 -march=native
 	OUTDIR := bin/out/release
 endif
 

@@ -8,7 +8,7 @@ ifeq (1,${DEBUG})
 	CFLAGS += -O0 -g
 	OUTDIR := bin/out/debug
 else
-	CFLAGS += -O2
+	CFLAGS += -O3 -march=native
 	OUTDIR := bin/out/release
 endif
 
