@@ -77,6 +77,7 @@ class MatrixCOO {
         return dense;
     }
 
+	// Complexity: O(tA*tB)		(for tI = #triplets of Matrix I)
     static MatrixCOO mult_naive (MatrixCOO &A, MatrixCOO &B) {
         MatrixCOO result;
 
@@ -92,6 +93,7 @@ class MatrixCOO {
         return result;
     }
 
+	// Complexity: O(n*log(n))		(for n = nnz(A) = nnz(b))
     static MatrixCOO mult_efficient (MatrixCOO &A1, MatrixCOO &A2) {
         // avoid complications when A1 and A2 are same object, copy A2 by value
         if (&A1 == &A2) {

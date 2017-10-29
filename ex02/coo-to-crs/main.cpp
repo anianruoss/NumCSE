@@ -84,7 +84,7 @@ class MatrixCRS {
         }
     }
 
-	// Complexity: O(t*log(t)) if t = #triplets
+	// Complexity: O(t*log(t))	(for t = #triplets)
     MatrixCRS(MatrixCOO &A) {
         A.sort_byRow();
         std::vector<Triplet<double>> &triplets = A.triplets;
