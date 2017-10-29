@@ -31,3 +31,7 @@ bin/
 *.exe
 *.out
 *.app
+
+# JetBrains files
+*.idea
+
