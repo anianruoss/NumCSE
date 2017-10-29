@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
+
 using namespace Eigen;
 
 /* @brief
@@ -9,12 +10,23 @@ using namespace Eigen;
  * @param[out] x The vector of parameters $(\alpha,\beta)$, intercept and slope of the line fitted
  */
 VectorXd lsqEst(const VectorXd &z, const VectorXd &c) {
-    int n = z.size();
     assert (z.size() == c.size() && "z and c must have same size");
+    int n = z.size();
+
+	VectorXd z1(n);
+	z1(0) = z(1);
+	z1(n-1) = z(n-2);
+	
+	for (int i = 1; i < n-1; ++i) {
+		z1(i) = z(i-1) + z(i+1);
+	}
+
+	MatrixXd A(n,2);
+	A << z, z1;
 
     VectorXd x(2);
-    //TODO
-
+	x = (A.transpose()*A).fullPivLu().solve(A.transpose()*c);
+	
     return x;
 }
 
