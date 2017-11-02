@@ -1,6 +1,6 @@
 #include "timer.h"
 #include <iostream>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 
 using namespace Eigen;

@@ -1,0 +1,2 @@
+Selection of cropped pictures originally from the Yale face database, obtained from
+http://vismod.media.mit.edu/vismod/classes/mas622-00/datasets/

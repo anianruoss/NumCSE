@@ -1,7 +1,7 @@
 #include "timer.h"
 #include <iostream>
 #include <iomanip>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <mgl2/mgl.h>
 
 using namespace Eigen;

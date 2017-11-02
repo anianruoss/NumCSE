@@ -1,8 +1,8 @@
 #include "timer.h"
 #include <iostream>
 #include <random>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
 #include <unsupported/Eigen/KroneckerProduct>
 
 
