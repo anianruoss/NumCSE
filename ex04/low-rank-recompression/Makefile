@@ -1,4 +1,4 @@
-PROJNAME := frobenius-least-squares 
+PROJNAME := low-rank-recompression
 
 CPP := g++
 CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
