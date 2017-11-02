@@ -1,8 +1,8 @@
 #include <iostream>
 #include <limits>
-#include <Eigen/Dense>
-#include <Eigen/QR>
-#include <Eigen/SVD>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/QR>
+#include <eigen3/Eigen/SVD>
 
 
 using namespace Eigen;

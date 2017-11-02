@@ -1,7 +1,7 @@
 #include <iostream>
 #include <limits>
-#include <Eigen/Dense>
-#include <Eigen/QR>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/QR>
 
 
 using namespace Eigen;

@@ -2,8 +2,8 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
 
 
 using namespace Eigen;
