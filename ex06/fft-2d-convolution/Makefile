@@ -1,8 +1,8 @@
 PROJNAME := fft-2d-convolution
 
 CPP := g++
-CFLAGS := -Wall -Wextra -Wpedantic -std=gnu++14 -I/usr/include/eigen3
-LFLAGS := -lstdc++ -lmgl
+CFLAGS := -std=gnu++14 -I/usr/include/eigen3
+LFLAGS := -lstdc++
 
 ifeq (1,${DEBUG})
 	CFLAGS += -O0 -g
