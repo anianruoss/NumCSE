@@ -28,17 +28,35 @@ VectorXd discreteConvolution(const VectorXd &x, const VectorXd &y) {
 }
 
 VectorXd PointB(const VectorXd &x, const VectorXd &y) {
-    VectorXd out;
-    // TODO
+	using index_t = MatrixXd::Index;
+	index_t m = x.size(), n = y.size();
 
-    return out;
+    VectorXd ym = VectorXd::Zero(m);
+	ym.head(n) += y;
+
+	Eigen::FFT<double> fft;
+	VectorXcd fft_x = fft.fwd(x);
+	VectorXcd fft_ym = fft.fwd(ym);
+	VectorXcd tmp = fft_x.cwiseProduct(fft_ym);
+
+    return fft.inv(tmp);
 }
 
 VectorXd PointC(const VectorXd &x, const VectorXd &y) {
-    VectorXd out;
-    // TODO
+	using index_t = MatrixXd::Index;
+	index_t m = x.size(), n = y.size();
 
-    return out;
+	VectorXd xL = VectorXd::Zero(m+n-1);
+	VectorXd yL = VectorXd::Zero(m+n-1);
+	xL.head(m) += x;
+	yL.head(n) += y;
+
+	Eigen::FFT<double> fft;
+	VectorXcd fft_xL = fft.fwd(xL);
+	VectorXcd fft_yL = fft.fwd(yL);
+	VectorXcd tmp = fft_xL.cwiseProduct(fft_yL);
+
+    return fft.inv(tmp);
 }
 
 
