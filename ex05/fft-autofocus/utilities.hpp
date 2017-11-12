@@ -16,7 +16,7 @@ void save_image(double focus) {
 
     // Create and save file
     std::stringstream ss;
-    ss << "image_focus="
+    ss << "bin/data/image_focus="
        << (int) focus
        << ".pgm";
     std::ofstream file(ss.str());
@@ -45,7 +45,7 @@ void plot_freq(double focus) {
     gr.Title(ss.str().c_str());
     gr.Axis(); gr.Tile(Xd, "bcwyr");
     std::stringstream ss2;
-    ss2 << "spectrum_focus="
+    ss2 << "bin/data/spectrum_focus="
         << focus
         << ".png";
     gr.WritePNG(ss2.str().c_str());
