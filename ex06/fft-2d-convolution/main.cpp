@@ -1,8 +1,6 @@
 #include <iostream>
 #include <eigen3/Eigen/Dense>
-#include <cmath>
 #include <unsupported/Eigen/FFT>
-#include <complex>
 
 
 using namespace Eigen;
@@ -36,21 +34,25 @@ void ifft2(MatrixXcd &C, const MatrixXcd &Y) {
 }
 
 void conv2(MatrixXcd &C, const MatrixXcd &A1, const MatrixXcd &A2) {
-	using Comp = std::complex<double>;
-	using index_t = MatrixXcd::Index;
-	using value_t = MatrixXcd::Scalar;
-	const index_t m = A1.rows(), n = A2.cols();
+    using index_t = MatrixXcd::Index;
+    const index_t m1 = A1.rows(), n1 = A1.cols();
+    const index_t m2 = A2.rows(), n2 = A2.cols();
 
-	if ((m != A2.rows()) || (n != A2.cols())) 
-		throw std::runtime_error("conv2: size mismatch");
+    const index_t Lrow = m1 + m2 - 1;
+    const index_t Lcol = n1 + n2 - 1;
 
-	C.resize(m,n);
-	MatrixXcd A1h(m,n), A2h(m,n);
+    MatrixXcd A1_ext = MatrixXcd::Zero(Lrow, Lcol);
+    MatrixXcd A2_ext = MatrixXcd::Zero(Lrow, Lcol);
+    A1_ext.topLeftCorner(m1, n1) = A1;
+    A2_ext.topLeftCorner(m2, n2) = A2;
 
-	fft2(A2h, (A2.template cast<Comp>()));
-	fft2(A1h, (A1.template cast<Comp>()));
+    MatrixXcd tmp1 = MatrixXcd::Zero(Lrow, Lcol);
+    MatrixXcd tmp2 = MatrixXcd::Zero(Lrow, Lcol);
 
-	ifft2(C, A1h.cwiseProduct(A2h));
+    fft2(tmp1, A1_ext);
+    fft2(tmp2, A2_ext);
+
+    ifft2(C, tmp1.cwiseProduct(tmp2));
 }
 
 
@@ -91,13 +93,8 @@ int main() {
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
 
-	MatrixXcd Fcirc = MatrixXcd::Zero(27,77);
-	
-	Fcirc.block(0,0,3,3) += F;
-
-
     MatrixXcd conv = MatrixXcd::Zero(27,77);
-    conv2(conv,A,Fcirc);
+    conv2(conv,A,F);
     MatrixXi out = conv.real().cast<int>();
     std::cout << out << std::endl;
 

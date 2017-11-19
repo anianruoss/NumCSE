@@ -24,7 +24,7 @@ VectorXd discreteConvolution(const VectorXd &x, const VectorXd &y) {
     return out;
 }
 
-VectorXd PointB(const VectorXd &x, const VectorXd &y) {
+VectorXd incorrectConvolutionTheorem(const VectorXd &x, const VectorXd &y) {
     using index_t = MatrixXd::Index;
     index_t m = x.size(), n = y.size();
 
@@ -39,7 +39,7 @@ VectorXd PointB(const VectorXd &x, const VectorXd &y) {
     return fft.inv(tmp);
 }
 
-VectorXd PointC(const VectorXd &x, const VectorXd &y) {
+VectorXd convolutionTheorem(const VectorXd &x, const VectorXd &y) {
     using index_t = MatrixXd::Index;
     index_t m = x.size(), n = y.size();
 
@@ -82,12 +82,12 @@ int main() {
     gr.Plot(datA);
     grA.Plot(datA);
     grA.WriteFrame("bin/data/filteredA.png");
-    auto convB = PointB(input, gaussFilter);
+    auto convB = incorrectConvolutionTheorem(input, gaussFilter);
     datB.Link(convB.data(), convB.size());
     gr.Plot(datB);
     grB.Plot(datB);
     grB.WriteFrame("bin/data/filteredB.png");
-    auto convC = PointC(input, gaussFilter);
+    auto convC = convolutionTheorem(input, gaussFilter);
     datC.Link(convC.data(), convC.size());
     gr.Plot(datC);
     grC.Plot(datC);
