@@ -16,9 +16,19 @@ using namespace Eigen;
  */
 template <typename CoeffVec>
 Vector2d dpEvalHorner (const CoeffVec& c, const double x) {
+    const unsigned int s = c.size();
 
     Vector2d val;
-    //TODO
+    val(0) = c[s-1];
+    val(1) = c[s-1] * (s-1);
+
+    for (unsigned int i = 1; i < s; ++i) {
+        val(0) = x * val(0) + c[s-(i+1)];
+    }
+
+    for (unsigned int i = 1; i < (s-1); ++i) {
+        val(1) = x * val(1) + (s-(i+1)) * c[s-(i+1)];
+    }
 
     return val;
 }
@@ -40,20 +50,20 @@ Vector2d dpEvalNaive(const CoeffVec& c, const double x) {
 
 
 int main() {
-    std::vector<double> c {3, 1, 5, 7, 9};
+    std::vector<double> c = {3, 1, 5, 7, 9};
     double x = .123;
 
     // Check implementations
     Vector2d p, p_naive;
     p = dpEvalHorner(c,x);
-    std::cout << "Using horner scheme:\n"
-              << "p(x) = " << p(0) <<
-              ", dp(x) = " << p(1) << "\n";
+    std::cout << "Using horner scheme:" << std::endl
+              << "p(x) = " << p(0)
+              << ", dp(x) = " << p(1) << std::endl;
 
     p_naive = dpEvalNaive(c,x);
-    std::cout << "Using monomial approach:\n"
+    std::cout << "Using monomial approach:" << std::endl
               << "p(x) = " << p_naive(0)
-              << ", dp(x) = " << p_naive(1) << "\n";
+              << ", dp(x) = " << p_naive(1) << std::endl;
 
     // Compare runtimes
     // TODO
