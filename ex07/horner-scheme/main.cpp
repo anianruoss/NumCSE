@@ -41,9 +41,28 @@ Vector2d dpEvalHorner (const CoeffVec& c, const double x) {
  */
 template <typename CoeffVec>
 Vector2d dpEvalNaive(const CoeffVec& c, const double x) {
+    const unsigned int s = c.size();
+    Vector2d val = Vector2d::Zero();
 
-    Vector2d val;
-    //TODO
+    for (unsigned int i = 0; i < s; ++i) {
+        double t = c[i];
+
+        for (unsigned j = 0; j < i; ++j) {
+            t *= x;
+        }
+
+        val(0) += t;
+    }
+
+    for (unsigned int i = 1; i < s; ++i) {
+        double t = i * c[i];
+
+        for (unsigned j = 0; j < i-1; ++j) {
+            t *= x;
+        }
+
+        val(1) += t;
+    }
 
     return val;
 }
@@ -58,15 +77,35 @@ int main() {
     p = dpEvalHorner(c,x);
     std::cout << "Using horner scheme:" << std::endl
               << "p(x) = " << p(0)
-              << ", dp(x) = " << p(1) << std::endl;
+              << ", dp(x) = " << p(1) << std::endl << std::endl;
 
     p_naive = dpEvalNaive(c,x);
     std::cout << "Using monomial approach:" << std::endl
               << "p(x) = " << p_naive(0)
-              << ", dp(x) = " << p_naive(1) << std::endl;
+              << ", dp(x) = " << p_naive(1) << std::endl << std::endl;
 
-    // Compare runtimes
-    // TODO
+    std::vector<double> test(1<<10);
+    std::srand(0);
+    std::generate(test.begin(), test.end(), std::rand);
+
+    Vector2d p_test, p_naive_test;
+    Timer t;
+
+    std::cout << "--> Horner scheme" << std::endl;
+    t.start();
+    p_test = dpEvalHorner(test,x);
+    t.stop();
+    std::cout << "duration: " << t.duration() << std::endl << std::endl;
+    t.reset();
+
+
+    std::cout << "--> Naive evaluation" << std::endl;
+    t.start();
+    p_naive_test = dpEvalNaive(test,x);
+    t.stop();
+    std::cout << "duration: " << t.duration() << std::endl << std::endl;
+
+    std::cout << "Error = " << (p_test - p_naive_test).norm() << std::endl;
 
     return 0;
 }
