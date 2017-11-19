@@ -4,17 +4,14 @@
 #include <unsupported/Eigen/FFT>
 #include <mgl2/mgl.h>
 
-#include <typeinfo>
 
 using namespace Eigen;
-
-
 
 VectorXd discreteConvolution(const VectorXd &x, const VectorXd &y) {
     using index_t = MatrixXd::Index;
     index_t m = x.size(), n = y.size();
 
-    VectorXd out(m+n-1);
+    VectorXd out = VectorXd::Zero(m+n-1);
 
     for (index_t k = 0; k < m+n-1; ++k) {
         for (index_t j = 0; j < m; ++j) {
@@ -28,33 +25,33 @@ VectorXd discreteConvolution(const VectorXd &x, const VectorXd &y) {
 }
 
 VectorXd PointB(const VectorXd &x, const VectorXd &y) {
-	using index_t = MatrixXd::Index;
-	index_t m = x.size(), n = y.size();
+    using index_t = MatrixXd::Index;
+    index_t m = x.size(), n = y.size();
 
     VectorXd ym = VectorXd::Zero(m);
-	ym.head(n) += y;
+    ym.head(n) += y;
 
-	Eigen::FFT<double> fft;
-	VectorXcd fft_x = fft.fwd(x);
-	VectorXcd fft_ym = fft.fwd(ym);
-	VectorXcd tmp = fft_x.cwiseProduct(fft_ym);
+    Eigen::FFT<double> fft;
+    VectorXcd fft_x = fft.fwd(x);
+    VectorXcd fft_ym = fft.fwd(ym);
+    VectorXcd tmp = fft_x.cwiseProduct(fft_ym);
 
     return fft.inv(tmp);
 }
 
 VectorXd PointC(const VectorXd &x, const VectorXd &y) {
-	using index_t = MatrixXd::Index;
-	index_t m = x.size(), n = y.size();
+    using index_t = MatrixXd::Index;
+    index_t m = x.size(), n = y.size();
 
-	VectorXd xL = VectorXd::Zero(m+n-1);
-	VectorXd yL = VectorXd::Zero(m+n-1);
-	xL.head(m) += x;
-	yL.head(n) += y;
+    VectorXd xL = VectorXd::Zero(m+n-1);
+    VectorXd yL = VectorXd::Zero(m+n-1);
+    xL.head(m) += x;
+    yL.head(n) += y;
 
-	Eigen::FFT<double> fft;
-	VectorXcd fft_xL = fft.fwd(xL);
-	VectorXcd fft_yL = fft.fwd(yL);
-	VectorXcd tmp = fft_xL.cwiseProduct(fft_yL);
+    Eigen::FFT<double> fft;
+    VectorXcd fft_xL = fft.fwd(xL);
+    VectorXcd fft_yL = fft.fwd(yL);
+    VectorXcd tmp = fft_xL.cwiseProduct(fft_yL);
 
     return fft.inv(tmp);
 }
