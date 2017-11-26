@@ -52,16 +52,15 @@ MatrixXd cubicSpline(const VectorXd &T, const VectorXd &Y) {
 // Assumes T is sorted, with no repetetions.
 VectorXd evalCubicSpline(const MatrixXd &S, const VectorXd &T,
                          const VectorXd &evalT) {
-	const int s = T.size();
     const int n = evalT.size();
     VectorXd out = VectorXd::Zero(n);
 
     for (int k = 0; k < n; ++k) {
-        for (int i = 0; i < s-1; ++i) {
+        for (int i = 0; i < S.cols(); ++i) {
             if (T(i+1) >= evalT(k)) {
-                out(k) += S(0,i) + S(1,i)*evalT(k);
-                out(k) += S(2,i) * std::pow(evalT(k),2);
-                out(k) += S(3,i) * std::pow(evalT(k),3);
+                out(k) += S(0,i) + S(1,i) * (evalT(k) - T(i));
+                out(k) += S(2,i) * std::pow(evalT(k) - T(i),2);
+                out(k) += S(3,i) * std::pow(evalT(k) - T(i),3);
                 break;
             }
         }
@@ -82,29 +81,29 @@ int main() {
 
     VectorXd evalSpline = evalCubicSpline(cubicSpline(T, Y), T, evalT);
 
-	std::vector<double> tvec(T.data(), T.data() + T.rows()*T.cols());
-	std::vector<double> yvec(Y.data(), Y.data() + Y.rows()*Y.cols());
+    std::vector<double> tvec(T.data(), T.data() + T.rows()*T.cols());
+    std::vector<double> yvec(Y.data(), Y.data() + Y.rows()*Y.cols());
 
-	double *t = &tvec[0];
-	double *y = &yvec[0];
+    double *t = &tvec[0];
+    double *y = &yvec[0];
 
-	mglData refx, refy;
-	refx.Link(t, 9);
-	refy.Link(y, 9);
+    mglData refx, refy;
+    refx.Link(t, 9);
+    refy.Link(y, 9);
 
     mglData datx, daty;
     datx.Link(evalT.data(), len);
     daty.Link(evalSpline.data(), len);
-	
+
     mglGraph gr;
     gr.SetRanges(0, 2, -3, 3);
+    gr.Plot(refx, refy, "g *");
+    gr.AddLegend("Reference Points", "g *");
     gr.Plot(datx, daty, "b");
-	gr.AddLegend("Splines", "b");
-	gr.Plot(refx, refy, "g *");
-	gr.AddLegend("Reference Points", "g *");
-	gr.Legend(2);
+    gr.AddLegend("Splines", "b");
+    gr.Legend(2);
     gr.WriteFrame("spline.eps");
-	
+
     return 0;
 }
 
