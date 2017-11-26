@@ -1,9 +1,10 @@
+#include "timer.h"
+#include <eigen3/Eigen/Dense>
+#include <mgl2/mgl.h>
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include <eigen3/Eigen/Dense>
-#include "timer.h"
 
 
 using namespace Eigen;
@@ -15,7 +16,7 @@ using namespace Eigen;
  * @param[out] vector containing p(x),p'(x)
  */
 template <typename CoeffVec>
-Vector2d dpEvalHorner (const CoeffVec& c, const double x) {
+Vector2d dpEvalHorner(const CoeffVec& c, const double x) {
     const unsigned int s = c.size();
 
     Vector2d val;
@@ -45,23 +46,11 @@ Vector2d dpEvalNaive(const CoeffVec& c, const double x) {
     Vector2d val = Vector2d::Zero();
 
     for (unsigned int i = 0; i < s; ++i) {
-        double t = c[i];
-
-        for (unsigned j = 0; j < i; ++j) {
-            t *= x;
-        }
-
-        val(0) += t;
+        val(0) += std::pow(x, i)*c[i];
     }
 
     for (unsigned int i = 1; i < s; ++i) {
-        double t = i * c[i];
-
-        for (unsigned j = 0; j < i-1; ++j) {
-            t *= x;
-        }
-
-        val(1) += t;
+        val(1) += std::pow(x,i-1)*c[i]*i;
     }
 
     return val;
@@ -84,28 +73,68 @@ int main() {
               << "p(x) = " << p_naive(0)
               << ", dp(x) = " << p_naive(1) << std::endl << std::endl;
 
-    std::vector<double> test(1<<10);
-    std::srand(0);
-    std::generate(test.begin(), test.end(), std::rand);
+    // Compare runtimes
+    const unsigned repeats = 10;
 
-    Vector2d p_test, p_naive_test;
-    Timer t;
+    std::cout << std::setw(10) << "n" << std::setw(25) << "Horner scheme:"
+              << std::setw(25) << "Monomial approach:" << "\n"
+              << " ================================================================\n";
 
-    std::cout << "--> Horner scheme" << std::endl;
-    t.start();
-    p_test = dpEvalHorner(test,x);
-    t.stop();
-    std::cout << "duration: " << t.duration() << std::endl << std::endl;
-    t.reset();
+	double timesNaive[19], timesHorner[19], error[19];
 
+    for (unsigned k = 2; k <= 20; ++k) {
+        Timer tm_slow, tm_fast;
+        std::vector<double> c;
 
-    std::cout << "--> Naive evaluation" << std::endl;
-    t.start();
-    p_naive_test = dpEvalNaive(test,x);
-    t.stop();
-    std::cout << "duration: " << t.duration() << std::endl << std::endl;
+        const int n = std::pow(2, k);
+        for (int i = 0; i < n; ++i) {
+            c.push_back(i+1);
+        }
 
-    std::cout << "Error = " << (p_test - p_naive_test).norm() << std::endl;
+        for (unsigned r = 0; r < repeats; ++r) {
+            tm_slow.start();
+            p_naive = dpEvalNaive(c,x);
+            tm_slow.stop();
+
+            tm_fast.start();
+            p = dpEvalHorner(c,x);
+            tm_fast.stop();
+        }
+
+        std::cout << std::setw(10) << n << std::setw(25) << tm_fast.min()
+                  << std::setw(25) << tm_slow.min() << "\n";
+
+        timesHorner[k-2] = tm_fast.min();
+        timesNaive[k-2] = tm_slow.min();
+		error[k-2] = (p - p_naive).norm();
+    }
+
+    // plot results with MathGL
+	double ref[19];
+    for (unsigned int i = 0; i < 19; ++i) {
+        ref[i] = (1 << (i+2));
+    }
+
+    mglData dataRef;
+    dataRef.Link(ref, 19);
+
+    mglData data1, data2;
+    data1.Link(timesHorner, 19);
+    data2.Link(timesNaive, 19);
+
+    mglGraph *gr = new mglGraph;
+    gr->Title("Runtime vs Polynomial Order");
+    gr->SetRanges(2,std::pow(2,20),1e-6,1);
+    gr->SetFunc("lg(x)","lg(y)");
+    gr->Axis();
+    gr->Plot(dataRef,data1,"r+");
+    gr->AddLegend("Horner","r+");
+    gr->Plot(dataRef,data2,"k+");
+    gr->AddLegend("Monomial", "k+");
+    gr->Label('x',"Polynomial Order [n]",0);
+    gr->Label('y', "Runtime [s]",0);
+    gr->Legend(2);
+	gr->WriteFrame("horner-runtimes.eps");
 
     return 0;
 }
