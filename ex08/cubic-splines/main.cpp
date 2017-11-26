@@ -40,7 +40,7 @@ MatrixXd cubicSpline(const VectorXd &T, const VectorXd &Y) {
     mu.head(n).tail(n-1) = triDiag.fullPivLu().solve(r);
 
     for (int i = 0; i < n; ++i) {
-        spline(1,i) = (Y(i+1) - Y(i))/h(i) - h(i)*(2*mu(i) + mu(i))/6;
+        spline(1,i) = (Y(i+1) - Y(i))/h(i) - h(i)*(2*mu(i) + mu(i+1))/6;
         spline(2,i) = mu(i)/2;
         spline(3,i) = (mu(i+1) - mu(i))/(6*h(i));
     }
