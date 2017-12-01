@@ -10,16 +10,9 @@ using namespace Eigen;
 // of the cubic polynomial on a subinterval.
 // Assumes T is sorted, has no repeated elements and T.size() == Y.size().
 MatrixXd cubicSpline(const VectorXd &T, const VectorXd &Y) {
-    int n = T.size() - 1; // T and Y have length n+1
-
-    MatrixXd spline(4, n);
-    spline.row(0) = Y.head(n).transpose();
-
-    VectorXd h(n);
-
-    for (int i = 0; i < n; ++i) {
-        h(i) = T(i+1) - T(i);
-    }
+    // T and Y have length n+1
+    int n = T.size() - 1;
+    VectorXd h = T.tail(n) - T.head(n);
 
     MatrixXd triDiag = MatrixXd::Zero(n-1,n-1);
     triDiag(0,0) = (h(0) + h(1))/3;
@@ -37,7 +30,10 @@ MatrixXd cubicSpline(const VectorXd &T, const VectorXd &Y) {
     }
 
     VectorXd mu = VectorXd::Zero(n+1);
-    mu.head(n).tail(n-1) = triDiag.fullPivLu().solve(r);
+    mu.head(n).tail(n-1) = triDiag.partialPivLu().solve(r);
+
+    MatrixXd spline(4, n);
+    spline.row(0) = Y.head(n).transpose();
 
     for (int i = 0; i < n; ++i) {
         spline(1,i) = (Y(i+1) - Y(i))/h(i) - h(i)*(2*mu(i) + mu(i+1))/6;
@@ -58,9 +54,8 @@ VectorXd evalCubicSpline(const MatrixXd &S, const VectorXd &T,
     for (int k = 0; k < n; ++k) {
         for (int i = 0; i < S.cols(); ++i) {
             if (T(i+1) >= evalT(k)) {
-                out(k) += S(0,i) + S(1,i) * (evalT(k) - T(i));
-                out(k) += S(2,i) * std::pow(evalT(k) - T(i),2);
-                out(k) += S(3,i) * std::pow(evalT(k) - T(i),3);
+                double x = evalT(k) - T(i);
+                out(k) = S(0,i) + x*(S(1,i) + x*(S(2,i) + x*S(3,i)));
                 break;
             }
         }
