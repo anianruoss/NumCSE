@@ -45,11 +45,12 @@ double maxInterpError(double a, VectorXd T, VectorXd evalT) {
     return maxError;
 }
 
-void plotInterpolation(VectorXd T, VectorXd evalT, const char* plotName) {
+void plotInterpolation(VectorXd T, VectorXd evalT, const char* plotName,
+                       bool graded = false) {
     const char colours[] = {'r', 'b', 'm', 'y', 'q', 'h', 'p'};
 
     int nParamVals = 7;
-    VectorXd paramVals = VectorXd::LinSpaced(nParamVals, 0, 2);
+    VectorXd paramVals = VectorXd::LinSpaced(nParamVals, 0.123456, 1.987654);
 
     const int nEvalPts = evalT.size();
     const int nInterpPts = T.size();
@@ -60,14 +61,22 @@ void plotInterpolation(VectorXd T, VectorXd evalT, const char* plotName) {
     gr.Axis();
 
     for (int i = 0; i < nParamVals; ++i) {
-        for (int k = 0; k < nInterpPts; ++k) {
-            Y(k) = std::pow(T(k), paramVals(i));
+        VectorXd tempT(T);
+
+        if (graded) {
+            for (int k = 0; k < nInterpPts; ++k) {
+                tempT(k) = std::pow(T(k), 2./paramVals(i));
+            }
         }
 
-        VectorXd evalInterp = evalPiecewiseInterp(T, Y, evalT);
+        for (int k = 0; k < nInterpPts; ++k) {
+            Y(k) = std::pow(tempT(k), paramVals(i));
+        }
+
+        VectorXd evalInterp = evalPiecewiseInterp(tempT, Y, evalT);
 
         mglData refx, refy;
-        refx.Link(T.data(), nInterpPts);
+        refx.Link(tempT.data(), nInterpPts);
         refy.Link(Y.data(), nInterpPts);
 
         mglData datx, daty;
@@ -92,11 +101,11 @@ void plotInterpolation(VectorXd T, VectorXd evalT, const char* plotName) {
 int main() {
     {
         int nInterpNodes = 8;
-        int nEvalPts = (1 << 9);
+        int nEvalPts = 1 << 9;
         VectorXd T = VectorXd::LinSpaced(nInterpNodes, 0, 1);
         VectorXd evalT = VectorXd::LinSpaced(nEvalPts, 0, 1);
 
-        plotInterpolation(T, evalT, "uniformMesh-linearInterpolation.eps");
+        plotInterpolation(T, evalT, "plots/uniformMesh-linInterpolation.eps");
 
         int nParamVals = 100;
         VectorXd paramVals = VectorXd::LinSpaced(nParamVals, 0, 2);
@@ -113,7 +122,77 @@ int main() {
         gr.SetRanges(0, 2, 0, 1);
         gr.Axis();
         gr.Plot(datx, daty);
-        gr.WriteFrame("uniformMesh-maxInterpolationError-varAlpha.eps");
+        gr.Label('x', "alpha", 0);
+        gr.Label('y', "max. error", 0);
+        gr.Title("Maximum Interpolation Error");
+        gr.WriteFrame("plots/uniformMesh-maxInterpolationError-varAlpha.eps");
+    }
+
+    {
+        double alpha = 0.54321;
+        int nTests = 10;
+        int nEvalPts = 1 << 12;
+        VectorXd evalT = VectorXd::LinSpaced(nEvalPts, 0, 1);
+        VectorXd maxErrors = VectorXd::Zero(nTests);
+
+        for (int i = 0; i < nTests; ++i) {
+            int nInterpNodes = 1 << i;
+            VectorXd T = VectorXd::LinSpaced(nInterpNodes, 0, 1);
+            maxErrors(i) = std::log(maxInterpError(alpha, T, evalT));
+        }
+
+        mglData daty;
+        daty.Link(maxErrors.tail(nTests).data(), nTests);
+        mglGraph gr;
+        gr.SetRanges(0, nTests, -6, 0);
+        gr.Axis();
+        gr.Plot(daty);
+        gr.Label('x', "mesh size (2^{n})", 0);
+        gr.Label('y', "log(max. error)", 0);
+        gr.Title("Maximum Interpolation Error");
+        gr.WriteFrame("plots/uniformMesh-logMaxInterpolationError-varN.eps");
+    }
+
+    {
+        int nInterpNodes = 8;
+        int nEvalPts = 1 << 9;
+        VectorXd T = VectorXd::LinSpaced(nInterpNodes, 0, 1);
+        VectorXd evalT = VectorXd::LinSpaced(nEvalPts, 0, 1);
+
+        plotInterpolation(T, evalT, "plots/gradedMesh-linInterpolation.eps",
+                          true);
+    }
+
+    {
+        double a = 0.5;
+        double b = 2./a;
+
+        int nTests = 10;
+        int nEvalPts = 1 << 12;
+        VectorXd evalT = VectorXd::LinSpaced(nEvalPts, 0, 1);
+        VectorXd maxErrors = VectorXd::Zero(nTests);
+
+        for (int i = 0; i < nTests; ++i) {
+            int nInterpNodes = 1 << i;
+            VectorXd T = VectorXd::LinSpaced(nInterpNodes, 0, 1);
+
+            for (int k = 0; k < nInterpNodes; ++k) {
+                T(k) = std::pow(T(k), b);
+            }
+
+            maxErrors(i) = std::log(maxInterpError(a, T, evalT));
+        }
+
+        mglData daty;
+        daty.Link(maxErrors.tail(nTests).data(), nTests);
+        mglGraph gr;
+        gr.SetRanges(0, nTests, -14, 0);
+        gr.Axis();
+        gr.Plot(daty);
+        gr.Label('x', "mesh size (2^{n})", 0);
+        gr.Label('y', "log(max. error)", 0);
+        gr.Title("Maximum Interpolation Error");
+        gr.WriteFrame("plots/gradedMesh-logMaxInterpolationError-varN.eps");
     }
 
     return 0;

@@ -8,7 +8,7 @@ ifeq (1,${DEBUG})
 	CFLAGS += -O0 -g
 	OUTDIR := bin/out/debug
 else
-	CFLAGS += -O3 -march=native 
+	CFLAGS += -O0 -march=native
 	OUTDIR := bin/out/release
 endif
 
@@ -33,8 +33,9 @@ clean:
 	@rm -r ./bin 2>/dev/null || true
 	@rm ${OBJFILES} 2>/dev/null || true
 	@rm ${PROJNAME} 2>/dev/null || true
+	@rm -r plots 2>/dev/null || true
 
 dirs:
 	mkdir -p bin/obj ${OUTDIR}
-	mkdir -p bin/data
+	mkdir -p plots
 
