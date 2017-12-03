@@ -24,8 +24,8 @@ VectorXd divDiff(const VectorXd &t, const VectorXd &y) {
 // y = values in t
 // x = evaluation points (as Eigen::Vector)
 // OUT: p = values in x */
-void intPolyEval (const VectorXd &t, const VectorXd &y, const VectorXd &x,
-                  VectorXd &p) {
+void intPolyEval(const VectorXd &t, const VectorXd &y, const VectorXd &x,
+                 VectorXd &p) {
     const unsigned n = y.size() - 1;
 
     // get Newton coefficients of polynomial (non in-situ implementation!)
