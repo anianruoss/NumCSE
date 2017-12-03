@@ -59,7 +59,7 @@ void adapPolyIpol(const Function &f, const double a, const double b,
     gr.AddLegend("Interpolation", "b");
     gr.Legend(0);
     gr.Title("Adaptive Polynomial Interpolation");
-    gr.WriteFrame("plots/adapPolyIopl.eps");
+    gr.WriteFrame("plots/adapPolyIpol.eps");
 }
 
 
