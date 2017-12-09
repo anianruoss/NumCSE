@@ -80,21 +80,17 @@ int main() {
             }
         }
 
-        double epsilon = std::numeric_limits<double>::epsilon();
+        double maxError = 0;
 
         for (int k = 0; k < n+1; ++k) {
-            for (int l = k; l < n+1; ++l) {
-                double innerProd = scal.col(k).dot(scal.col(l));
-
-                if (l == k) {
-                    assert(innerProd != 0);
-                } else	{
-                    assert(innerProd < epsilon * n*n);
-                }
+            for (int l = k+1; l < n+1; ++l) {
+                maxError = std::max(maxError, scal.col(k).dot(scal.col(l)));
             }
+
+            assert(scal.col(k).dot(scal.col(k)) != 0);
         }
 
-        std::cout << "All checks have passed" << std::endl;
+        std::cout << "Maximum orthogonality error: " << maxError << std::endl;
     }
 
     {
@@ -108,30 +104,33 @@ int main() {
         VectorXd evalT = VectorXd::LinSpaced(sampling_points, -1, 1);
         VectorXd fvalT = evalT.unaryExpr(f);
 
-        VectorXd alpha = VectorXd::Random(n);
+        VectorXd alpha = VectorXd::Random(n+1);
         bestApproxCheb(f, alpha);
 
-        VectorXd T = VectorXd::LinSpaced(n, -1, 1);
-        VectorXd Y = T.unaryExpr(std::bind(recclenshaw, alpha, _1));
+        VectorXd approxT = evalT.unaryExpr(std::bind(recclenshaw, alpha, _1));
+
+        std::cout << "Error: "
+                  << (fvalT - approxT).cwiseAbs().maxCoeff()
+                  << std::endl;
 
         mglData refx, refy;
         refx.Link(evalT.data(), evalT.size());
         refy.Link(fvalT.data(), evalT.size());
 
         mglData datx, daty;
-        datx.Link(T.data(), T.size());
-        daty.Link(Y.data(), T.size());
+        datx.Link(evalT.data(), evalT.size());
+        daty.Link(approxT.data(), approxT.size());
 
         mglGraph gr;
         gr.SetRanges(-1, 1, 0, 1);
         gr.Axis();
-        gr.Plot(refx, refy, "g *");
-        gr.AddLegend("Original Function", "g *");
+        gr.Plot(refx, refy, "g");
+        gr.AddLegend("Original Function", "g");
         gr.Plot(datx, daty, "b");
         gr.AddLegend("Interpolation", "b");
         gr.Legend(2);
         gr.Title("Chebyshev Polynomial Interpolation");
-        gr.WriteFrame("plots/chebyPolyIpol.eps");
+        gr.WriteFrame("plots/chebyPolyIpol.png");
     }
 
     return 0;

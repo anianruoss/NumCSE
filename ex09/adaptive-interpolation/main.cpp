@@ -125,7 +125,7 @@ int main() {
     gr.Plot(dat1x, dat1y, "b+");
     gr.AddLegend("f_1(t) = sin(e^{2t})","b+");
     gr.Plot(dat2x, dat2y, "rs");
-    gr.AddLegend("f_2(t) = \\sqrt{t}/(1 + 16t^2)","rs");
+    gr.AddLegend("f_2(t) = \\sqrt{t} / (1 + 16t^2)","rs");
     gr.Label('x',"Step [N]", 0);
     gr.Label('y', "Max. Error", 0);
     gr.Legend();
