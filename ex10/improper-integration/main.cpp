@@ -17,11 +17,23 @@ template <class Function>
 double quadinf(const int n, Function &&f) {
     Eigen::VectorXd w, x;
 
-    // Compute nodes and weights of Gauss quadrature rule
-    // using Golub-Welsh algorithm
+    // Compute nodes and weights of Gauss quadrature rule using Golub-Welsh algorithm
     golubwelsh(n, w, x);
 
-    // TODO
+    auto f_hat = [f] (double t) {
+        double temp = f(1./std::tan(.5*(t+1)*M_PI));
+        return temp / std::pow(std::sin(.5*(t+1)*M_PI),2);
+    };
+
+    double result = 0;
+
+    for (int i = 0; i < n; ++i) {
+        result += w(i)*f_hat(x(i));
+    }
+
+    result *= M_PI/2.;
+
+    return result;
 }
 
 
