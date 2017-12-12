@@ -25,13 +25,7 @@ double quadinf(const int n, Function &&f) {
         return temp / std::pow(std::sin(.5*(t+1)*M_PI),2);
     };
 
-    double result = 0;
-
-    for (int i = 0; i < n; ++i) {
-        result += w(i)*f_hat(x(i));
-    }
-
-    result *= M_PI/2.;
+    double result = w.dot(x.unaryExpr(f_hat)) * M_PI / 2.;
 
     return result;
 }
