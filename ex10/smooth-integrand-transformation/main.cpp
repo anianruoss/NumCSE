@@ -64,7 +64,7 @@ void nonSmoothIntegrand(const Function &fh, const double I_ex) {
     mglGraph gr;
     gr.Title("Maximum Error");
     gr.SetRanges(1, N, yMin, yMax);
-    gr.SetFunc("x","lg(y)");
+    gr.SetFunc("lg(x)","lg(y)");
     gr.Axis();
     gr.Plot(datx, daty, "b+");
     gr.AddLegend("f(t) = sinh(t)","b+");
@@ -137,7 +137,6 @@ void smoothIntegrand(const Function &fh, const double I_ex) {
     gr.Label('y', "Error", 0);
     gr.Legend();
     gr.WriteFrame("plots/gaussQuadrature-SmoothError.eps");
-
 }
 
 
@@ -151,7 +150,6 @@ int main() {
     };
 
     nonSmoothIntegrand(f, I_ex);
-
     smoothIntegrand(f, I_ex);
 
     return 0;
