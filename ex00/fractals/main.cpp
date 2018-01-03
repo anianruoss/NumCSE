@@ -1,5 +1,5 @@
-#include <iostream>
 #include <cmath>
+#include <iostream>
 #include <string>
 #include <mgl2/mgl.h>
 
@@ -44,7 +44,7 @@ class Point {
         return len;
     }
 
-    void toArrays(double* xcoords, double* ycoords) {
+    void toArrays(double *xcoords, double *ycoords) {
         Point *iter = this;
         int i = 0;
 
@@ -59,8 +59,8 @@ class Point {
 
     void plot(const char *name) {
         int len = this->countPoints();
-        double* xcoords = new double[len];
-        double* ycoords = new double[len];
+        double *xcoords = new double[len];
+        double *ycoords = new double[len];
         this->toArrays(xcoords, ycoords);
 
         mglData datx, daty;
@@ -115,9 +115,8 @@ int main() {
 
     for (int i = 0; i < nStages; ++i) {
         p1->fractalize();
-        std::string name = std::string("bin/fractalize") + std::to_string(i+1) + std::string(".eps");
-        const char *cname = name.c_str();
-        p1->plot(cname);
+        std::string name = "plots/fractalize" + std::to_string(i+1) + ".eps";
+        p1->plot(name.c_str());
         lengths[i] = p1->length();
     }
 
@@ -129,6 +128,6 @@ int main() {
     gr.Axis();
     gr.Label('x',"Stage");
     gr.Label('y',"Length");
-    gr.WriteFrame("bin/lengthsPlot.eps");
+    gr.WriteFrame("plots/lengthsPlot.eps");
 }
 
