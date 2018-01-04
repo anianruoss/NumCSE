@@ -1,7 +1,8 @@
-#include <iostream>
-#include <iomanip>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <mgl2/mgl.h>
+
 
 int main() {
     double *hValues = new double[21];
@@ -11,13 +12,17 @@ int main() {
     double value = 1.2;
     double h = 1;
 
-    std::cout << std::setw(8) << "h"
-              << std::setw(15) << "exact"
-              << std::setw(15) << "cancellation"
-              << std::setw(15) << "error"
-              << std::setw(15) << "improved"
-              << std::setw(15) << "error"
+    int sep = 20;
+
+    std::cout << std::setw(sep) << "h"
+              << std::setw(sep) << "exact"
+              << std::setw(sep) << "cancellation"
+              << std::setw(sep) << "error"
+              << std::setw(sep) << "improved"
+              << std::setw(sep) << "error"
               << std::endl;
+
+    std::cout << std::fixed << std::scientific;
 
     for (int i = 0; i < 21; ++i) {
         double exact_value = std::cos(value);
@@ -25,19 +30,20 @@ int main() {
         double no_cancellation = 2.0*std::cos(value+h/2.0)*std::sin(h/2.0)/h;
 
         hValues[i] = h;
-        cancellationErrors[i] = std::abs(cancellation - exact_value)/exact_value;
-        noCancellationErrors[i] = std::abs(no_cancellation - exact_value)/exact_value;
+        cancellationErrors[i] = std::abs(cancellation - exact_value);
+        cancellationErrors[i] /= exact_value;
+        noCancellationErrors[i] = std::abs(no_cancellation - exact_value);
+        noCancellationErrors[i] /= exact_value;
 
-        std::cout << std::setw(8) << h
-                  << std::setw(15) << exact_value
-                  << std::setw(15) << cancellation
-                  << std::setw(15) << cancellationErrors[i]
-                  << std::setw(15) << no_cancellation
-                  << std::setw(15) << noCancellationErrors[i]
+        std::cout << std::setw(sep) << h
+                  << std::setw(sep) << exact_value
+                  << std::setw(sep) << cancellation
+                  << std::setw(sep) << cancellationErrors[i]
+                  << std::setw(sep) << no_cancellation
+                  << std::setw(sep) << noCancellationErrors[i]
                   << std::endl;
         h /= 10;
     }
-
 
     mglData stepSize, dataRef;
     stepSize.Link(hValues, 21);
@@ -56,8 +62,10 @@ int main() {
 
     double xTicks[] = {1e-20,1e-15,1e-10,1e-5,1e+0};
     double yTicks[] = {1e-20,1e-15,1e-10,1e-5,1e+0};
-    gr->SetTicksVal('x', mglData(5,xTicks), "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
-    gr->SetTicksVal('y', mglData(5,yTicks), "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
+    gr->SetTicksVal('x', mglData(5,xTicks),
+                    "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
+    gr->SetTicksVal('y', mglData(5,yTicks),
+                    "10^{-20}\n10^{-15}\n10^{-10}\n\\10^{-5}\n\\10^{0}");
     gr->Axis();
 
     gr->Plot(stepSize,data1,"k+");
@@ -67,7 +75,7 @@ int main() {
     gr->Plot(stepSize,dataRef,"b|");
     gr->AddLegend("O(h)","b|");
     gr->Legend(1);
-    gr->WriteFrame("bin/avoid-cancellation.eps");
+    gr->WriteFrame("plots/avoid-cancellation.eps");
 
     return 0;
 }

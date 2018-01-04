@@ -33,6 +33,9 @@ clean:
 	@rm -r ./bin 2>/dev/null || true
 	@rm ${OBJFILES} 2>/dev/null || true
 	@rm ${PROJNAME} 2>/dev/null || true
+	@rm -r plots 2>/dev/null || true
 
 dirs:
 	mkdir -p bin/obj ${OUTDIR}
+	mkdir -p plots
+
