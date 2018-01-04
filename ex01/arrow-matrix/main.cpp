@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <mgl2/mgl.h>
 
+
 using namespace Eigen;
 
 /* @brief Build an "arrow matrix" and compute A*A*y
@@ -64,9 +65,9 @@ void efficient_arrow_matrix_2_times_x(const VectorXd &d,
  * versions.
 */
 void runtime_arrow_matrix() {
-    unsigned int nLevels = 10;
+    const unsigned int nLevels = 10;
     unsigned int *n = new unsigned int[nLevels];
-	double *minTime = new double[nLevels];
+    double *minTime = new double[nLevels];
     double *minTimeEff = new double[nLevels];
 
     n[0] = 4;
@@ -82,9 +83,9 @@ void runtime_arrow_matrix() {
 
     for (unsigned int i = 0; i < nLevels; ++i) {
         Timer timer, timer_eff;
-		
+
         for (unsigned int r = 0; r < repeats; ++r) {
-		   	VectorXd a = VectorXd::Random(n[i]);
+            VectorXd a = VectorXd::Random(n[i]);
             VectorXd d = VectorXd::Random(n[i]);
             VectorXd x = VectorXd::Random(n[i]);
             VectorXd y;
@@ -92,23 +93,23 @@ void runtime_arrow_matrix() {
             timer.start();
             arrow_matrix_2_times_x(a,d,x,y);
             timer.stop();
-			
+
             timer_eff.start();
             efficient_arrow_matrix_2_times_x(a,d,x,y);
             timer_eff.stop();
         }
 
-		minTime[i] = timer.min();
+        minTime[i] = timer.min();
         minTimeEff[i] = timer_eff.min();
 
         std::cout << std::setw(8) << n[i]
-				  << std::scientific << std::setprecision(3)
+                  << std::scientific << std::setprecision(3)
                   << std::setw(15) << minTime[i]
                   << std::setw(15) << minTimeEff[i] << std::endl;
 
     }
 
-	// plot results with MathGL
+    // plot results with MathGL
     double nMgl[nLevels];
     double ref1[nLevels], ref2[nLevels];
     for (unsigned int i = 0; i < nLevels; ++i) {
@@ -129,16 +130,21 @@ void runtime_arrow_matrix() {
 
     mglGraph *gr = new mglGraph;
     gr->Title("Runtime vs Matrix size");
-    gr->SetRanges(n[0],n[0]*pow(2,nLevels-1),1e-6,1e+1);  gr->SetFunc("lg(x)","lg(y)");
+    gr->SetRanges(n[0],n[0]*pow(2,nLevels-1),1e-6,1e+1);
+    gr->SetFunc("lg(x)","lg(y)");
     gr->Axis();
-    gr->Plot(matSize,data1,"k +"); gr->AddLegend("original","k +");
-    gr->Plot(matSize,data2,"r +"); gr->AddLegend("efficient","r +");
-    gr->Plot(matSize,dataRef1,"k"); gr->AddLegend("O(n^3)","k");
-    gr->Plot(matSize,dataRef2,"r"); gr->AddLegend("O(n)","r");
+    gr->Plot(matSize,data1,"k +");
+    gr->AddLegend("original","k +");
+    gr->Plot(matSize,data2,"r +");
+    gr->AddLegend("efficient","r +");
+    gr->Plot(matSize,dataRef1,"k");
+    gr->AddLegend("O(n^3)","k");
+    gr->Plot(matSize,dataRef2,"r");
+    gr->AddLegend("O(n)","r");
     gr->Label('x',"Matrix size [n]",0);
     gr->Label('y', "Runtime [s]",0);
     gr->Legend(2);
-	gr->WriteFrame("bin/arrowmatvec_comparison.eps");
+    gr->WriteFrame("plots/arrowmatvec_comparison.eps");
 }
 
 

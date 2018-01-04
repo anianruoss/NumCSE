@@ -40,7 +40,7 @@ void multAmin(const VectorXd &x, VectorXd &y) {
 }
 
 void runtime_multAmin() {
-    unsigned int nLevels = 10;
+    const unsigned int nLevels = 10;
     unsigned int *n = new unsigned int[nLevels];
     double *minTime = new double[nLevels];
     double *minTimeEff = new double[nLevels];
@@ -117,7 +117,7 @@ void runtime_multAmin() {
     gr->Label('x',"Vector size [n]",0);
     gr->Label('y', "Runtime [s]",0);
     gr->Legend(2);
-    gr->WriteFrame("bin/multAmin_comparison.eps");
+    gr->WriteFrame("plots/multAmin_comparison.eps");
 }
 
 
