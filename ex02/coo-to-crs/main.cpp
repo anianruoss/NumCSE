@@ -1,16 +1,17 @@
-#include <iostream>
-#include <vector>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
+
+#include <iostream>
+#include <vector>
 
 
 using namespace Eigen;
 
 class MatrixCOO {
-  public:
-    std::vector<Triplet<double>> triplets;
+    friend class MatrixCRS;
 
-    MatrixCOO(MatrixXd &A) {
+  public:
+    MatrixCOO(MatrixXd &A) : rows(A.rows()), cols(A.cols()) {
         for (int i = 0; i < A.rows(); ++i) {
             for (int j = 0; j < A.cols(); ++j) {
                 if (A(i,j) != 0) {
@@ -23,84 +24,63 @@ class MatrixCOO {
 
     void sort_byRow() {
         std::sort(triplets.begin(), triplets.end(),
-        [] (auto t1, auto t2) {
-            return t1.row() < t2.row();
+        [] (Triplet<double> a, Triplet<double> b) {
+            return a.row() < b.row();
         });
     }
 
-    int cols() {
-        int maxCol = -1;
-
-        for (auto t : triplets) {
-            if (maxCol < t.col()) {
-                maxCol = t.col();
-            }
-        }
-
-        return ++maxCol;
-    }
-
-    int rows() {
-        int maxRow = -1;
-
-        for (auto t : triplets) {
-            if (maxRow < t.row()) {
-                maxRow = t.row();
-            }
-        }
-
-        return ++maxRow;
-    }
-
     MatrixXd toDense() {
-        MatrixXd dense(this->rows(), this->cols());
+        MatrixXd A = MatrixXd::Zero(rows, cols);
 
         for (auto t : triplets) {
-            dense(t.row(),t.col()) += t.value();
+            A(t.row(), t.col()) += t.value();
         }
 
-        return dense;
+        return A;
     }
+
+  private:
+    int rows;
+    int cols;
+    std::vector<Triplet<double>> triplets;
 };
 
 class MatrixCRS {
   public:
-    std::vector<double> val;
-    std::vector<int> col_ind;
-    std::vector<int> row_ptr = {0};
-
     MatrixCRS(MatrixXd &A) {
         for (int i = 0; i < A.rows(); ++i) {
+            row_ptr.push_back(val.size());
+
             for (int j = 0; j < A.cols(); ++j) {
                 if (A(i,j) != 0) {
                     val.push_back(A(i,j));
                     col_ind.push_back(j);
                 }
             }
-
-            if (row_ptr.size()) {
-                row_ptr.push_back(col_ind.size());
-            }
         }
+
+        row_ptr.push_back(val.size()+1);
     }
 
-	// Complexity: O(t*log(t))	(for t = #triplets)
+    // Complexity: O(t*log(t))	(for t = #triplets)
     MatrixCRS(MatrixCOO &A) {
         A.sort_byRow();
-        std::vector<Triplet<double>> &triplets = A.triplets;
 
-        for (unsigned int i = 0; i < triplets.size(); ++i) {
-            val.push_back(triplets[i].value());
-            col_ind.push_back(triplets[i].col());
-
-            if (row_ptr.size()-1 < triplets[i].row()) {
-                for (int k = row_ptr.size()-1; k < triplets[i].row(); ++k) {
-                    row_ptr.push_back(col_ind.size()-1);
+        for (auto it = A.triplets.begin(); it != A.triplets.end(); ++it) {
+            if (it->row()+1 > row_ptr.size()) {
+                if (it->row() > (it-1)->row()+1) {
+                    int empty_rows = it->row() - (it-1)->row()-1;
+                    for (int i = 0; i < empty_rows; ++i) {
+                        row_ptr.push_back(val.size());
+                    }
                 }
+                row_ptr.push_back(val.size());
             }
+            val.push_back(it->value());
+            col_ind.push_back(it->col());
         }
 
-        row_ptr.push_back(col_ind.size());
+        row_ptr.push_back(val.size()+1);
     }
 
     int rows() {
@@ -109,7 +89,6 @@ class MatrixCRS {
 
     int cols() {
         int maxCol = -1;
-
         for (auto c : col_ind) {
             if (maxCol < c) {
                 maxCol = c;
@@ -120,17 +99,26 @@ class MatrixCRS {
     }
 
     MatrixXd toDense() {
-        MatrixXd dense(this->rows(), this->cols());
-        int k = 0;
+        const int n = row_ptr.size();
+        MatrixXd A = MatrixXd::Zero(rows(), cols());
 
-        for (int i = 0; i < this->rows(); ++i) {
+        for (int i = 0; i < n-2; ++i) {
             for (int j = row_ptr[i]; j < row_ptr[i+1]; ++j) {
-                dense(i, col_ind[j]) = val[k++];
+                A(i, col_ind[j]) = val[j];
             }
         }
 
-        return dense;
+        for (int j = row_ptr[n-2]; j < row_ptr[n-1]-1; ++j) {
+            A(rows()-1, col_ind[j]) = val[j];
+        }
+
+        return A;
     }
+
+  private:
+    std::vector<double> val;
+    std::vector<int> col_ind;
+    std::vector<int> row_ptr;
 };
 
 
