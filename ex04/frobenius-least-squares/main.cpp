@@ -1,37 +1,32 @@
-#include <iostream>
 #include <eigen3/Eigen/Dense>
 #include <unsupported/Eigen/KroneckerProduct>
+#include <iostream>
 
 
 using namespace Eigen;
 
-MatrixXd min_frob(const VectorXd &z, const VectorXd &g) {
+MatrixXd minFrob(const VectorXd &z, const VectorXd &g) {
     const int n = z.size();
 
     MatrixXd C = kroneckerProduct(MatrixXd::Identity(n,n), z.transpose());
-
     MatrixXd CCT = -C*C.transpose();
-    VectorXd p = CCT.fullPivLu().solve(g);
 
+    VectorXd p = CCT.fullPivLu().solve(g);
     VectorXd lamdba = -C.transpose()*p;
 
-    MatrixXd M(n,n);
-
-    for (int i = 0; i < n; ++i) {
-        M.row(i) = lamdba.segment(n*i,n);
-    }
+    MatrixXd M = Map<MatrixXd>(lamdba.data(), n, n).transpose();
 
     return M;
 }
 
 
 int main() {
-    int n = 10;
+    int n = 100;
 
     VectorXd z = VectorXd::Random(n);
     VectorXd g = VectorXd::Random(n);
 
-    MatrixXd M_augmNormal = min_frob(z, g);;
+    MatrixXd M_augmNormal = minFrob(z, g);
     MatrixXd M_lagrange = g*z.transpose() / z.squaredNorm();
 
     std::cout << "Error = " << (M_augmNormal - M_lagrange).norm() << std::endl;
