@@ -1,7 +1,7 @@
 #ifndef _FFT_LOCAL_
 #define _FFT_LOCAL_
 
-# include <Eigen/Dense>
+# include <eigen3/Eigen/Dense>
 # include <unsupported/Eigen/FFT>
 
 /*!

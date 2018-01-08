@@ -1,16 +1,16 @@
+#include "src/setFocus.hpp" // Contains set_focus
+#include "src/utilities.hpp" // Contains important processing functions 
+#include "src/fftLocal.hpp" // Contains FFT utilities
+
 #include <mgl2/mgl.h>
 #include <eigen3/Eigen/Dense>
-#include "setFocus.hpp" // Contains set_focus
-#include "utilities.hpp" // Contains important processing functions 
-#include "fftLocal.hpp" // Contains FFT utilities
-
 
 using namespace Eigen;
 
 // Computes high frequency content in matrix M
 double high_frequency_content(const MatrixXd & M) {
-    int n = M.rows(), m = M.cols();
-    double V = 0;
+    const int n = M.rows(), m = M.cols();
+    double V{0};
 
     for (int k1 = 0; k1 < n; ++k1) {
         for (int k2 = 0; k2 < m; ++ k2) {
@@ -23,7 +23,7 @@ double high_frequency_content(const MatrixXd & M) {
     return V;
 }
 
-// plot the variation of high frequency content with focus parameter
+// Plots the variation of high frequency content with focus parameter
 void plotV(unsigned int N) {
 
     VectorXd x(N), y(N);
@@ -51,7 +51,7 @@ void plotV(unsigned int N) {
     gr.Plot(datx, daty, "r+");
     gr.Label('x',"$f$",0);
     gr.Label('y',"$V(\\mathbf{B}(f))$",0);
-    gr.WriteFrame("bin/data/frequencyContent.eps");
+    gr.WriteFrame("plots/frequencyContent.eps");
 }
 
 
