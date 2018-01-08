@@ -1,9 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <Eigen/Dense>
 #include "pgm.hpp" // Contains PGMObject
+#include <eigen3/Eigen/Dense>
+
+#include <fstream>
+#include <iostream>
 
 Eigen::MatrixXd conv2(const Eigen::MatrixXd& P, const Eigen::MatrixXd& S) {
     

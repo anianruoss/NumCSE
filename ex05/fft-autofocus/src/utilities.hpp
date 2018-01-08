@@ -1,7 +1,10 @@
-#include <Eigen/Dense>
-#include "setFocus.hpp" // Contains set_focus
-#include "pgm.hpp" // Contains PGMObject
 #include "fftLocal.hpp" // Contains FFT utilities
+#include "pgm.hpp" // Contains PGMObject
+#include "setFocus.hpp" // Contains set_focus
+
+#include <eigen3/Eigen/Dense>
+#include <mgl2/mgl.h>
+
 
 using namespace Eigen;
 
@@ -16,7 +19,7 @@ void save_image(double focus) {
 
     // Create and save file
     std::stringstream ss;
-    ss << "bin/data/image_focus="
+    ss << "plots/image_focus="
        << (int) focus
        << ".pgm";
     std::ofstream file(ss.str());
@@ -45,7 +48,7 @@ void plot_freq(double focus) {
     gr.Title(ss.str().c_str());
     gr.Axis(); gr.Tile(Xd, "bcwyr");
     std::stringstream ss2;
-    ss2 << "bin/data/spectrum_focus="
+    ss2 << "plots/spectrum_focus="
         << focus
         << ".png";
     gr.WritePNG(ss2.str().c_str());
