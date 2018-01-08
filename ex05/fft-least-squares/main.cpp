@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     gr.Plot(datxp, datyp, "r +");
     gr.Label('x',"X",0);
     gr.Label('y',"Y",0);
-    gr.WriteFrame("bin/orbit.eps");
+    gr.WriteFrame("plots/orbit.eps");
 
     return 0;
 }
