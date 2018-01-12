@@ -36,5 +36,4 @@ clean:
 
 dirs:
 	mkdir -p bin/obj ${OUTDIR}
-	mkdir -p bin/data
 
