@@ -9,13 +9,16 @@ using namespace Eigen;
 VectorXd evalPiecewiseInterp(const VectorXd &T, const VectorXd &Y,
                              const VectorXd &evalT) {
     const int n = evalT.size();
+    const int m = T.size();
+
     VectorXd out = VectorXd::Zero(n);
+    VectorXd slope = VectorXd::Zero(m-1);
+    slope = (Y.tail(m-1)-Y.head(m-1)).cwiseQuotient(T.tail(m-1)-T.head(m-1));
 
     for (int k = 0; k < n; ++k) {
-        for (int i = 0; i < T.size()-1; ++i) {
-            if (evalT(k) <= T(i+1)) {
-                double slope = (Y(i+1) - Y(i)) / (T(i+1) - T(i));
-                out(k) = Y(i) + slope * (evalT(k) - T(i));
+        for (int i = 0; i < m-1; ++i) {
+            if (T(i) <= evalT(k) && evalT(k) <= T(i+1)) {
+                out(k) = Y(i) + slope(i) * (evalT(k) - T(i));
                 break;
             }
         }
@@ -25,24 +28,14 @@ VectorXd evalPiecewiseInterp(const VectorXd &T, const VectorXd &Y,
 }
 
 double maxInterpError(double a, VectorXd T, VectorXd evalT) {
-    const int nInterpPts = T.size();
-    VectorXd Y = VectorXd::Zero(nInterpPts);
+    auto f = [a] (double t) {
+        return std::pow(t,a);
+    };
 
-    for (int i = 0; i < nInterpPts; ++i) {
-        Y(i) = std::pow(T(i), a);
-    }
-
+    VectorXd Y = T.unaryExpr(f);
     VectorXd evalInterp = evalPiecewiseInterp(T, Y, evalT);
 
-    double maxError = 0;
-    for (int i = 0; i < evalT.size(); ++i) {
-        double error = std::abs(evalInterp(i) - std::pow(evalT(i), a));
-        if (error > maxError) {
-            maxError = error;
-        }
-    }
-
-    return maxError;
+    return (evalT.unaryExpr(f) - evalInterp).cwiseAbs().maxCoeff();
 }
 
 void plotInterpolation(VectorXd T, VectorXd evalT, const char* plotName,
