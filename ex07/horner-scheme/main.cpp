@@ -1,11 +1,11 @@
 #include "timer.h"
 #include <eigen3/Eigen/Dense>
 #include <mgl2/mgl.h>
+
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-
 
 using namespace Eigen;
 
@@ -58,59 +58,65 @@ Vector2d dpEvalNaive(const CoeffVec& c, const double x) {
 
 
 int main() {
-    std::vector<double> c = {3, 1, 5, 7, 9};
-    double x = .123;
+    std::vector<double> c {3, 1, 5, 7, 9};
+    const double x = .123;
 
     // Check implementations
     Vector2d p, p_naive;
     p = dpEvalHorner(c,x);
     std::cout << "Using horner scheme:" << std::endl
               << "p(x) = " << p(0)
-              << ", dp(x) = " << p(1) << std::endl << std::endl;
+              << ", dp(x) = " << p(1)
+              << std::endl << std::endl;
 
     p_naive = dpEvalNaive(c,x);
     std::cout << "Using monomial approach:" << std::endl
               << "p(x) = " << p_naive(0)
-              << ", dp(x) = " << p_naive(1) << std::endl << std::endl;
+              << ", dp(x) = " << p_naive(1)
+              << std::endl << std::endl;
 
     // Compare runtimes
     const unsigned repeats = 10;
+    double timesNaive[19], timesHorner[19], error[19];
+    const size_t sep = 20;
 
-    std::cout << std::setw(10) << "n" << std::setw(25) << "Horner scheme:"
-              << std::setw(25) << "Monomial approach:" << "\n"
-              << " ================================================================\n";
-
-	double timesNaive[19], timesHorner[19], error[19];
+    std::cout << std::setw(10) << "n"
+              << std::setw(sep) << "horner scheme"
+              << std::setw(sep) << "monomial approach"
+              << std::setw(sep) << "error"
+              << std::fixed << std::setprecision(10)
+              << std::endl;
 
     for (unsigned k = 2; k <= 20; ++k) {
-        Timer tm_slow, tm_fast;
-        std::vector<double> c;
+        const unsigned n = std::pow(2,k);
+        VectorXd cVec = VectorXd::Random(n);
+        std::vector<double> cTest(cVec.data(), cVec.data() + cVec.size());
 
-        const int n = std::pow(2, k);
-        for (int i = 0; i < n; ++i) {
-            c.push_back(i+1);
-        }
+        Timer tm_slow, tm_fast;
 
         for (unsigned r = 0; r < repeats; ++r) {
             tm_slow.start();
-            p_naive = dpEvalNaive(c,x);
+            p_naive = dpEvalNaive(cTest,x);
             tm_slow.stop();
 
             tm_fast.start();
-            p = dpEvalHorner(c,x);
+            p = dpEvalHorner(cTest,x);
             tm_fast.stop();
         }
 
-        std::cout << std::setw(10) << n << std::setw(25) << tm_fast.min()
-                  << std::setw(25) << tm_slow.min() << "\n";
-
         timesHorner[k-2] = tm_fast.min();
         timesNaive[k-2] = tm_slow.min();
-		error[k-2] = (p - p_naive).norm();
+        error[k-2] = (p - p_naive).norm();
+
+        std::cout << std::setw(10) << n
+                  << std::setw(sep) << timesHorner[k-2]
+                  << std::setw(sep) << timesNaive[k-2]
+                  << std::setw(sep) << error[k-2]
+                  << std::endl;
     }
 
     // plot results with MathGL
-	double ref[19];
+    double ref[19];
     for (unsigned int i = 0; i < 19; ++i) {
         ref[i] = (1 << (i+2));
     }
@@ -134,7 +140,7 @@ int main() {
     gr->Label('x',"Polynomial Order [n]",0);
     gr->Label('y', "Runtime [s]",0);
     gr->Legend(2);
-	gr->WriteFrame("horner-runtimes.eps");
+    gr->WriteFrame("plots/horner-runtimes.eps");
 
     return 0;
 }
