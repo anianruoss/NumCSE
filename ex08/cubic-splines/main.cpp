@@ -1,7 +1,7 @@
 #include <eigen3/Eigen/Dense>
 #include <mgl2/mgl.h>
-#include <iostream>
 
+#include <iostream>
 
 using namespace Eigen;
 
@@ -10,36 +10,24 @@ using namespace Eigen;
 // of the cubic polynomial on a subinterval.
 // Assumes T is sorted, has no repeated elements and T.size() == Y.size().
 MatrixXd cubicSpline(const VectorXd &T, const VectorXd &Y) {
-    // T and Y have length n+1
-    int n = T.size() - 1;
+    const int n = T.size() - 1;
+
     VectorXd h = T.tail(n) - T.head(n);
+    VectorXd slope = (Y.tail(n) - Y.head(n)).cwiseQuotient(h);
+    VectorXd r = slope.tail(n-1) - slope.head(n-1);
 
-    MatrixXd triDiag = MatrixXd::Zero(n-1,n-1);
-    triDiag(0,0) = (h(0) + h(1))/3;
+    MatrixXd triDiag = MatrixXd::Zero(n-1, n-1);
+    triDiag.diagonal() = (h.tail(n-1) + h.head(n-1)) / 3.;
+    triDiag.diagonal(1) = triDiag.diagonal(-1) = h.head(n-1).tail(n-2) / 6.;
 
-    for (int i = 1; i < n-1; ++i) {
-        triDiag(i,i) = (h(i) + h(i+1))/3;
-        triDiag(i,i-1) = h(i)/6;
-        triDiag(i-1,i) = h(i)/6;
-    }
+    VectorXd sigma = VectorXd::Zero(n+1);
+    sigma.head(n).tail(n-1) = triDiag.partialPivLu().solve(r);
 
-    VectorXd r(n-1);
-
-    for (int i = 0; i < n-1; ++i) {
-        r(i) = (Y(i+2) - Y(i+1))/h(i+1) - (Y(i+1) - Y(i))/h(i);
-    }
-
-    VectorXd mu = VectorXd::Zero(n+1);
-    mu.head(n).tail(n-1) = triDiag.partialPivLu().solve(r);
-
-    MatrixXd spline(4, n);
-    spline.row(0) = Y.head(n).transpose();
-
-    for (int i = 0; i < n; ++i) {
-        spline(1,i) = (Y(i+1) - Y(i))/h(i) - h(i)*(2*mu(i) + mu(i+1))/6;
-        spline(2,i) = mu(i)/2;
-        spline(3,i) = (mu(i+1) - mu(i))/(6*h(i));
-    }
+    MatrixXd spline = MatrixXd::Zero(4, n);
+    spline.row(0) = Y.head(n);
+    spline.row(1) = slope - h.cwiseProduct(2*sigma.head(n)+sigma.tail(n)) / 6.;
+    spline.row(2) = sigma.head(n) / 2.;
+    spline.row(3) = (sigma.tail(n) - sigma.head(n)).cwiseQuotient(6. * h);
 
     return spline;
 }
@@ -53,7 +41,7 @@ VectorXd evalCubicSpline(const MatrixXd &S, const VectorXd &T,
 
     for (int k = 0; k < n; ++k) {
         for (int i = 0; i < S.cols(); ++i) {
-            if (T(i+1) >= evalT(k)) {
+            if (T(i) <= evalT(k) && evalT(k) <= T(i+1)) {
                 double x = evalT(k) - T(i);
                 out(k) = S(0,i) + x*(S(1,i) + x*(S(2,i) + x*S(3,i)));
                 break;
@@ -64,27 +52,20 @@ VectorXd evalCubicSpline(const MatrixXd &S, const VectorXd &T,
     return out;
 }
 
-
 int main() {
     VectorXd T(9);
     VectorXd Y(9);
     T << 0, 0.4802, 0.7634, 1, 1.232, 1.407, 1.585, 1.879, 2;
     Y << 0., 0.338, 0.7456, 0, -1.234, 0 , 1.62, -2.123, 0;
 
-    int len = 1 << 9;
+    const int len = 1 << 9;
     VectorXd evalT = VectorXd::LinSpaced(len, T(0), T(T.size()-1));
 
     VectorXd evalSpline = evalCubicSpline(cubicSpline(T, Y), T, evalT);
 
-    std::vector<double> tvec(T.data(), T.data() + T.rows()*T.cols());
-    std::vector<double> yvec(Y.data(), Y.data() + Y.rows()*Y.cols());
-
-    double *t = &tvec[0];
-    double *y = &yvec[0];
-
     mglData refx, refy;
-    refx.Link(t, 9);
-    refy.Link(y, 9);
+    refx.Link(T.data(), T.size());
+    refy.Link(Y.data(), Y.size());
 
     mglData datx, daty;
     datx.Link(evalT.data(), len);
@@ -97,7 +78,7 @@ int main() {
     gr.Plot(datx, daty, "b");
     gr.AddLegend("Splines", "b");
     gr.Legend(2);
-    gr.WriteFrame("spline.eps");
+    gr.WriteFrame("plots/spline.eps");
 
     return 0;
 }
