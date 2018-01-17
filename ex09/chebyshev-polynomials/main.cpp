@@ -1,11 +1,15 @@
 #include "chebPolyEval.hpp"
+
 #include <eigen3/Eigen/Dense>
 #include <mgl2/mgl.h>
+
+#include <cassert>
+#include <cmath>
+#include <functional>
 #include <iostream>
 #include <vector>
 
 
-using namespace std::placeholders;
 using namespace Eigen;
 
 double recclenshaw(const VectorXd &a, const double x) {
@@ -28,10 +32,10 @@ double recclenshaw(const VectorXd &a, const double x) {
 // $\alpha$ is the output vector of coefficients.
 template <typename Function>
 void bestApproxCheb(const Function &f, VectorXd &alpha) {
-    int n = alpha.size()-1;
+    const int n = alpha.size()-1;
 
     auto roots = [n] (double x) {
-        return std::cos(M_PI*(2*x+1)/(2*(n+1)));
+        return std::cos(M_PI * (2.*x + 1) / (2.*(n+1)));
     };
 
     VectorXd chebyRoots = VectorXd::LinSpaced(n+1, 0, n).unaryExpr(roots);
@@ -40,30 +44,17 @@ void bestApproxCheb(const Function &f, VectorXd &alpha) {
 
     for (int i = 0; i < n+1; ++i) {
         std::vector<double> chebyPol = chebPolyEval(n, chebyRoots(i));
-
-        for (int k = 0; k < n+1; ++k) {
-            scal(i,k) = chebyPol[k];
-        }
+        scal.row(i) = Map<VectorXd>(chebyPol.data(), chebyPol.size());
     }
 
-    alpha = VectorXd::Zero(n+1);
-
-    for (int k = 0; k < n+1; ++k) {
-        for (int j = 0; j < n+1; ++j) {
-            alpha(k) += 2*fRoots(j)*scal(j,k)/(n+1);
-        }
-    }
-
-    alpha(0) /= 2;
+    alpha = (scal.transpose() * fRoots) / static_cast<double>(n+1);
+    alpha.tail(n) *= 2.;
 }
 
 
 int main() {
     {
         int n = 1000;
-
-        // Check the orthogonality of Chebyshev polynomials
-        std::cout << "Checking orthogonality of Chebyshev polynomials" << std::endl;
 
         auto roots = [n] (double x) {
             return std::cos(M_PI*(2*x+1)/(2*(n+1)));
@@ -74,10 +65,7 @@ int main() {
 
         for (int i = 0; i < n+1; ++i) {
             std::vector<double> chebyPol = chebPolyEval(n, chebyRoots(i));
-
-            for (int k = 0; k < n+1; ++k) {
-                scal(i,k) = chebyPol[k];
-            }
+            scal.row(i) = Map<VectorXd>(chebyPol.data(), chebyPol.size());
         }
 
         double maxError = 0;
@@ -107,9 +95,10 @@ int main() {
         VectorXd alpha = VectorXd::Random(n+1);
         bestApproxCheb(f, alpha);
 
-        VectorXd approxT = evalT.unaryExpr(std::bind(recclenshaw, alpha, _1));
+        auto tmp = std::bind(recclenshaw, alpha, std::placeholders::_1);
+        VectorXd approxT = evalT.unaryExpr(tmp);
 
-        std::cout << "Error: "
+        std::cout << "Interpolation error: "
                   << (fvalT - approxT).cwiseAbs().maxCoeff()
                   << std::endl;
 
