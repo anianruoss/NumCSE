@@ -6,7 +6,6 @@
 *.lo
 *.o
 *.obj
-bin/
 
 # Precompiled Headers
 *.gch
@@ -34,4 +33,8 @@ bin/
 
 # JetBrains files
 *.idea
+
+# Bin and Build directories
+bin/
+build/
 
