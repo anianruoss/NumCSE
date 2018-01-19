@@ -35,8 +35,21 @@ Matrix buildA(const Vector & c, const unsigned int i0, const unsigned int j0) {
     triplets.push_back(Triplet(i0-1, j0-1, 1.));
 
     A.setFromTriplets(triplets.begin(), triplets.end());
+    A.makeCompressed();
 
     return A;
+}
+
+Vector backSub(const Vector & c, const Vector & b) {
+    const size_t n = c.size() + 1;
+    Vector x = Vector::Zero(n);
+    x(n-1) = b(n-1);
+
+    for (size_t i = 1; i < n; ++i) {
+        x(n-1-i) = b(n-1-i) - x(n-i) * c(n-1-i);
+    }
+
+    return x;
 }
 
 //! \brief Solve the system Ax = b with optimal complexity O(n)
@@ -50,13 +63,18 @@ Vector solveLSE(const Vector & c, const Vector & b, unsigned int i0,
     assert(c.size() == b.size()-1 && "Size mismatch!");
     assert(i0 > j0);
 
-    // Allocate solution vector
-    Vector ret(b.size());
+    Vector u = Vector::Zero(b.size());
+    Vector v = Vector::Zero(b.size());
+    u(i0-1) = 1.;
+    v(j0-1) = 1.;
 
-    // TODO: problem 2b, solve system Ax = b in O(n)
+    Vector Ainvb = backSub(c, b);
+    Vector Ainvu = backSub(c, u);
 
-    return ret;
+    return Ainvb -  Ainvu * v.dot(Ainvb) / (1. + v.dot(Ainvu));
+
 }
+
 
 int main(int, char**) {
     // Setup data for problem
@@ -67,9 +85,6 @@ int main(int, char**) {
     Vector b = Vector::Random(n); // Random vector for b
     Vector c = Vector::Random(n-1); // Random vector for c
 
-    //// PROBLEM 2a
-    std::cout << "*** PROBLEM 1a:" << std::endl;
-
     // Solve sparse system using sparse LU and our own routine
     Matrix A = buildA(c, i0, j0);
     A.makeCompressed();
@@ -77,8 +92,8 @@ int main(int, char**) {
     splu.analyzePattern(A);
     splu.factorize(A);
 
-    std::cout << "Error: " << std::endl
-              << (splu.solve(b) - solveLSE(c, b, i0, j0)).norm() << std::endl;
+    std::cout << "Error: " << (splu.solve(b) - solveLSE(c, b, i0, j0)).norm()
+              << std::endl;
 
     return 0;
 }
