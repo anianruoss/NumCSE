@@ -16,14 +16,25 @@ using Matrix = Eigen::SparseMatrix<double>;
 //! \param[in] i0 row index i_0
 //! \param[in] j0 column index j_0
 //! \return Sparse matrix A
-Matrix buildA(const Vector & c, unsigned int i0, unsigned int j0) {
+Matrix buildA(const Vector & c, const unsigned int i0, const unsigned int j0) {
     assert(i0 > j0);
 
-    unsigned int n = c.size() + 1;
+    const unsigned int n = c.size() + 1;
     Matrix A(n,n);
     Triplets triplets;
+    triplets.reserve(2*n);
 
-    // TODO: problem 2a, construct and return the matrix A given c, i0 and j0
+    for (unsigned int i = 0; i < n; ++i) {
+        triplets.push_back(Triplet(i, i, 1.));
+    }
+
+    for (unsigned int i = 0; i < n-1; ++i) {
+        triplets.push_back(Triplet(i, i+1, c(i)));
+    }
+
+    triplets.push_back(Triplet(i0-1, j0-1, 1.));
+
+    A.setFromTriplets(triplets.begin(), triplets.end());
 
     return A;
 }
