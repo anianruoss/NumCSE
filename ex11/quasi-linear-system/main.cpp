@@ -7,7 +7,6 @@
 
 using namespace Eigen;
 
-
 // New version 1.1: using sparse matrices, dropping general nonlinear solver,
 // using error instead of residual
 
@@ -22,11 +21,12 @@ using namespace Eigen;
 template <class func, class Vector>
 void fixed_point_step(const func & A, const Vector & b, const Vector & x,
                       Vector & x_new) {
-
-    //TODO
-
+    auto T = A(x);
+    SparseLU<SparseMatrix<double>> AxLU;
+    AxLU.analyzePattern(T);
+    AxLU.factorize(T);
+    x_new = AxLU.solve(b);
 }
-
 
 //! \brief Implements a single step of the Netwon iteration for $x^{(k+1)}$
 //! Exploits Sherman-Morrison-Woodbury formula for fast inversion of rank-one
@@ -40,26 +40,83 @@ void fixed_point_step(const func & A, const Vector & b, const Vector & x,
 template <class func, class Vector>
 void newton_step(const func & A, const Vector & b, const Vector & x,
                  Vector & x_new) {
+    auto T = A(x);
+    SparseLU<SparseMatrix<double>> AxLU;
+    AxLU.analyzePattern(T);
+    AxLU.factorize(T);
 
-    //TODO
+    auto Axinv_b = AxLU.solve(b);
+    auto Axinv_x = AxLU.solve(x);
 
+    double tmp = 1. / (x.norm() + x.dot(Axinv_x));
+
+    x_new = Axinv_b + Axinv_x * x.transpose() * (x - Axinv_b) * tmp;
 }
-
 
 template <class func, class Vector>
 void fixed_point_method(const func & A, const Vector & b, const double atol,
                         const double rtol, const int max_itr) {
+    Vector x = b;
+    Vector x_new = x;
 
-    //TODO
+    for (int i = 0; i < max_itr; ++i) {
+        fixed_point_step(A, b, x, x_new);
+        double r = (x - x_new).norm();
+
+        std::cout << "[Step " << i << "] Error: " << r << std::endl;
+
+        if (r < atol) {
+            std::cout << "[CONVERGED] in " << i
+                      << " iterations due to absolute tolerance" << std::endl
+                      << std::endl;
+            return;
+        }
+
+        if (r < rtol * x_new.norm()) {
+            std::cout << "[CONVERGED] in " << i
+                      << " iterations due to relative tolerance" << std::endl
+                      << std::endl;
+            return;
+        }
+
+        x = x_new;
+    }
+
+    std::cerr << "[DID NOT CONVERGE] reached max. iterations " << max_itr
+              << std::endl << std::endl;
 }
-
 
 template <class func, class Vector>
 void newton_method(const func & A, const Vector & b, const double atol,
                    const double rtol, const int max_itr) {
+    Vector x = b;
+    Vector x_new = x;
 
-    //TODO
+    for (int i = 0; i < max_itr; ++i) {
+        newton_step(A, b, x, x_new);
+        double r = (x - x_new).norm();
 
+        std::cout << "[Step " << i << "] Error: " << r << std::endl;
+
+        if (r < atol) {
+            std::cout << "[CONVERGED] in " << i
+                      << " iterations due to absolute tolerance" << std::endl
+                      << std::endl;
+            return;
+        }
+
+        if (r < rtol * x_new.norm()) {
+            std::cout << "[CONVERGED] in " << i
+                      << " iterations due to relative tolerance" << std::endl
+                      << std::endl;
+            return;
+        }
+
+        x = x_new;
+    }
+
+    std::cerr << "[DID NOT CONVERGE] reached max. iterations " << max_itr
+              << std::endl << std::endl;
 }
 
 
@@ -98,8 +155,10 @@ int main(void) {
         return T;
     };
 
+    std::cout << "Fixed point method" << std::endl;
     fixed_point_method(A, b, atol, rtol, max_itr);
 
+    std::cout << "Newton's method" << std::endl;
     newton_method(A, b, atol, rtol, max_itr);
 
     return 0;
