@@ -37,6 +37,5 @@ endmacro(add_problem)
 ### MAKE RULES FOR INDIVIDUAL EXERCISES
 add_problem(problemX_NewtonVector)
 add_problem(problemX_rankk)
-add_problem(problemX_singlestep)
 add_problem(problemX_polar)
 

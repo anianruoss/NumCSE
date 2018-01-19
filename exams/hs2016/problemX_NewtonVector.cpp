@@ -102,11 +102,10 @@ int main() {
     auto ab = getIntv(f, qr, 1e-6, 1e-6);
 
     // Output approximate (a,b) and reference solution.
-    std::cout << "Newton's method estimate is =" << std::endl;
-    std::cout << "(" << ab.first  << ", ";
-    std::cout << ab.second << ")," << std::endl;
-    std::cout << "while the exact solution is =" << std::endl;
-    std::cout << "(-0.696257, 1.30374)" << std::endl;
+    std::cout << "Newton's method estimate is = "
+              << "(" << ab.first  << ", " << ab.second << ")" << std::endl;
+    std::cout << "while the exact solution is = "
+              << "(-0.696257, 1.30374)" << std::endl;
 
     return 0;
 }
