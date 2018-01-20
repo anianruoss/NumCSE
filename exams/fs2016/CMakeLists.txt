@@ -27,6 +27,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
+# We find MathGL
+find_package(MathGL2)
+include_directories(${MATHGL2_INCLUDE_DIRS})
+
 ### MAKE RULES FOR INDIVIDUAL EXERCISES
 # Make rule for problem1 (type make problem1)
 set(SRCS problem1.cpp)
@@ -35,6 +39,7 @@ add_executable(problem1 ${SRCS})
 # Make rule for problem3 (type make problem3)
 set(SRCS problem3.cpp)
 add_executable(problem3 ${SRCS})
+target_link_libraries(problem3 ${MATHGL2_LIBRARIES})
 
 # Make rule for problem4 (type make problem4)
 set(SRCS problem4.cpp)
