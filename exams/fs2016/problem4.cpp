@@ -18,7 +18,7 @@ void gaussrule(int n, Vector & w, Vector & xi) {
         xi(0) = 0;
         w(0) = 2;
     } else {
-//         Vector b(n-1);
+        // Vector b(n-1);
         Eigen::MatrixXd J = Eigen::MatrixXd::Zero(n,n);
 
         for(int i = 1; i < n; ++i) {
@@ -30,16 +30,18 @@ void gaussrule(int n, Vector & w, Vector & xi) {
         Eigen::EigenSolver<Eigen::MatrixXd> eig(J);
 
         xi = eig.eigenvalues().real();
-        w = 2 * eig.eigenvectors().real().topRows<1>().cwiseProduct(eig.eigenvectors().real().topRows<1>());
+        w = 2 * eig.eigenvectors().real().topRows<1>().cwiseProduct(
+                eig.eigenvectors().real().topRows<1>());
     }
 
     std::vector<std::pair<double,double>> P;
     P.reserve(n);
-    for(int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         P.push_back(std::pair<double,double>(xi(i),w(i)));
     }
+
     std::sort(P.begin(), P.end());
-    for(int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         xi(i) = std::get<0>(P[i]);
         w(i) = std::get<1>(P[i]);
     }
@@ -51,29 +53,44 @@ void gaussrule(int n, Vector & w, Vector & xi) {
 //! \param[out] Vector containing the function g calculated in the Gauss nodes.
 template<typename Function>
 Vector comp_g_gausspts(Function f, int n) {
+    Vector w = Vector::Zero(n);
+    Vector xi = Vector::Zero(n);
 
-    Vector g(n);
+    // Compute Gauss nodes and weights and rescale them to [0,1]
+    gaussrule(n, w, xi);
+    w /= 2.;
+    xi = (xi + Vector::Ones(n)) / 2.;
 
-    // TODO: problem 4b
+    Vector p = Vector::Zero(n);
+    Vector q = Vector::Zero(n);
+    q(n-1) = w(n-1)*std::exp(xi(n-1))*f(xi(n-1));
+
+    for (int i = 1; i < n; ++i) {
+        p(i) = p(i-1) + w(i-1)*std::exp(-xi(i-1))*f(xi(i-1));
+        q(n-1-i) = q(n-i) + w(n-1-i)*std::exp(xi(n-1-i))*f(xi(n-1-i));
+    }
+
+    Vector g = Vector::Zero(n);
+
+    for (int i = 0; i < n; ++i) {
+        g(i) = std::exp(xi(i))*p(i) + std::exp(-xi(i))*q(i);
+    }
 
     return g;
 }
 
 
 int main() {
-
-    //// PROBLEM 4c
-    // TODO: problem 4c, Test the implementation by calculating g(xi^21_10) for f(y)=exp(-|0.5-y|)
-
     int n = 21;
     auto f = [] (double y) {
         return exp(-std::abs(.5-y));
     };
+
     Vector g = comp_g_gausspts(f,n);
     std::cout << "*** PROBLEM 4c:" << std::endl;
 
-    std::cout << "g(xi^" << n << "_" << (n+1)/2 << ") = " << g((n+1)/2-1)
-              << std::endl;
+    std::cout << "g(xi^" << n << "_" << (n+1)/2 << ")  = " << g((n+1)/2-1)
+              << std::endl << "exact result = 1" << std::endl;
 
     return 0;
 }

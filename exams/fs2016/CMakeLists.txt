@@ -45,7 +45,3 @@ target_link_libraries(problem3 ${MATHGL2_LIBRARIES})
 set(SRCS problem4.cpp)
 add_executable(problem4 ${SRCS})
 
-# Make rule for problem5 (type make problem5)
-set(SRCS problem5.cpp)
-add_executable(problem5 ${SRCS})
-
