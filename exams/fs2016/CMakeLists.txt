@@ -32,10 +32,6 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 set(SRCS problem1.cpp)
 add_executable(problem1 ${SRCS})
 
-# Make rule for problem2 (type make problem2)
-set(SRCS problem2.cpp)
-add_executable(problem2 ${SRCS})
-
 # Make rule for problem3 (type make problem3)
 set(SRCS problem3.cpp)
 add_executable(problem3 ${SRCS})
