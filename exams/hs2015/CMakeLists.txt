@@ -41,7 +41,3 @@ add_executable(problem2 ${SRCS})
 set(SRCS problem3.cpp)
 add_executable(problem3 ${SRCS})
 
-# Make rule for problem5 (type make problem5)
-set(SRCS problem5.cpp)
-add_executable(problem5 ${SRCS})
-
