@@ -125,9 +125,10 @@ void mod_newt_ord() {
         std::cout << space << solutions.at(i)
                   << space << errors.at(i);
 
-        if (i > 0) {
-            std::cout << space
-                      << std::log(errors.at(i)) / std::log(errors.at(i-1));
+        if (i > 1) {
+            double diff1 = std::log(errors.at(i)) - std::log(errors.at(i-1));
+            double diff2 = std::log(errors.at(i-1)) - std::log(errors.at(i-2));
+            std::cout << space << diff1 / diff2;
         }
         std::cout << std::endl;
     }
